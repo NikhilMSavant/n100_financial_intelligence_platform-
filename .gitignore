@@ -1,5 +1,6 @@
-venv/
+.venv/
 __pycache__/
-*.db
+*.pyc
+.pytest_cache/
 .env
-.ipynb_checkpoints/
+db/nifty100.db
