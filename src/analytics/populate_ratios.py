@@ -81,6 +81,9 @@ def main():
         npm = net_profit_margin(r["net_profit"], r["sales"])
         opm_result = operating_profit_margin(r["operating_profit"], r["sales"], r["opm_percentage"])
         roe = return_on_equity(r["net_profit"], r["equity_capital"], r["reserves"])
+        roce_result = return_on_capital_employed(
+            r["profit_before_tax"], r["equity_capital"], r["reserves"], r["borrowings"], r["broad_sector"]
+        )
         de_result = debt_to_equity(r["borrowings"], r["equity_capital"], r["reserves"], r["broad_sector"])
         icr_result = interest_coverage_ratio(r["operating_profit"], r["other_income"], r["interest"])
         ndebt = net_debt(r["borrowings"], r["investments"])
@@ -113,19 +116,21 @@ def main():
             "pat_cagr_5yr": pat_cagr["value"],
             "eps_cagr_5yr": eps_cagr["value"],
             "composite_quality_score": quality_score,
+            "return_on_equity_pct": roe,
+            "return_on_capital_employed_pct": roce_result["value"],
         })
 
     conn.execute("DELETE FROM financial_ratios")
     conn.executemany("""
         INSERT INTO financial_ratios (
             company_id, year, net_profit_margin_pct, operating_profit_margin_pct,
-            return_on_equity_pct, debt_to_equity, interest_coverage, asset_turnover,
+            return_on_equity_pct, return_on_capital_employed_pct, debt_to_equity, interest_coverage, asset_turnover,
             free_cash_flow_cr, capex_cr, earnings_per_share, book_value_per_share,
             dividend_payout_ratio_pct, total_debt_cr, cash_from_operations_cr,
             revenue_cagr_5yr, pat_cagr_5yr, eps_cagr_5yr, composite_quality_score
         ) VALUES (
             :company_id, :year, :net_profit_margin_pct, :operating_profit_margin_pct,
-            :return_on_equity_pct, :debt_to_equity, :interest_coverage, :asset_turnover,
+            :return_on_equity_pct, :return_on_capital_employed_pct, :debt_to_equity, :interest_coverage, :asset_turnover,
             :free_cash_flow_cr, :capex_cr, :earnings_per_share, :book_value_per_share,
             :dividend_payout_ratio_pct, :total_debt_cr, :cash_from_operations_cr,
             :revenue_cagr_5yr, :pat_cagr_5yr, :eps_cagr_5yr, :composite_quality_score
