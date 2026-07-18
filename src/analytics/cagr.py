@@ -14,7 +14,6 @@ don't guard against negative bases). So each broken case gets its own
 named flag instead of a silently wrong number.
 """
 
-
 def compute_cagr(start_value, end_value, n_years):
     """
     Returns a dict: {"value": float | None, "flag": str | None}
@@ -23,6 +22,13 @@ def compute_cagr(start_value, end_value, n_years):
     """
     if n_years is None or n_years <= 0:
         return {"value": None, "flag": "INSUFFICIENT"}
+
+    # Missing data point at either end of the window - can't compute a
+    # growth rate without both ends, and it's a data gap, not a sign-based
+    # edge case, so it gets its own distinct flag rather than being folded
+    # into ZERO_BASE or BOTH_NEGATIVE.
+    if start_value is None or end_value is None:
+        return {"value": None, "flag": "MISSING_DATA"}
 
     # Case: both positive - normal case
     if start_value > 0 and end_value > 0:

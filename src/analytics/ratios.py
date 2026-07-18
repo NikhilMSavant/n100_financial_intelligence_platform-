@@ -9,8 +9,8 @@ raising or returning 0/inf), so downstream code can distinguish
 
 
 def net_profit_margin(net_profit, sales):
-    """Net Profit Margin % = net_profit / sales * 100. None if sales == 0."""
-    if sales is None or sales == 0:
+    """Net Profit Margin % = net_profit / sales * 100. None if sales == 0 or net_profit missing."""
+    if sales is None or sales == 0 or net_profit is None:
         return None
     return (net_profit / sales) * 100
 
@@ -24,7 +24,7 @@ def operating_profit_margin(operating_profit, sales, stated_opm_percentage=None,
 
     Returns a dict: {"value": float | None, "mismatch": bool, "stated": float | None}
     """
-    if sales is None or sales == 0:
+    if sales is None or sales == 0 or operating_profit is None:
         return {"value": None, "mismatch": False, "stated": stated_opm_percentage}
 
     computed = (operating_profit / sales) * 100
@@ -39,8 +39,11 @@ def return_on_equity(net_profit, equity_capital, reserves):
     """
     ROE % = net_profit / (equity_capital + reserves) * 100.
     Returns None if equity + reserves <= 0 (negative or zero net worth
-    makes the ratio meaningless/misleading, not just undefined).
+    makes the ratio meaningless/misleading, not just undefined) or if
+    net_profit is missing.
     """
+    if net_profit is None:
+        return None
     net_worth = (equity_capital or 0) + (reserves or 0)
     if net_worth <= 0:
         return None
@@ -50,7 +53,7 @@ def return_on_equity(net_profit, equity_capital, reserves):
 def return_on_capital_employed(ebit, equity_capital, reserves, borrowings, broad_sector=None):
     """
     ROCE % = EBIT / (equity_capital + reserves + borrowings) * 100.
-    Returns None if capital employed <= 0.
+    Returns None if capital employed <= 0 or ebit is missing.
 
     For companies in the 'Financials' broad_sector (banks, NBFCs, insurance),
     absolute ROCE thresholds are misleading because leverage is structurally
@@ -60,7 +63,7 @@ def return_on_capital_employed(ebit, equity_capital, reserves, borrowings, broad
     an absolute cutoff, rather than skipping the calculation entirely.
     """
     capital_employed = (equity_capital or 0) + (reserves or 0) + (borrowings or 0)
-    if capital_employed <= 0:
+    if capital_employed <= 0 or ebit is None:
         return {"value": None, "is_financials_sector": broad_sector == "Financials"}
 
     value = (ebit / capital_employed) * 100
@@ -68,8 +71,8 @@ def return_on_capital_employed(ebit, equity_capital, reserves, borrowings, broad
 
 
 def return_on_assets(net_profit, total_assets):
-    """ROA % = net_profit / total_assets * 100. Returns None if total_assets == 0."""
-    if total_assets is None or total_assets == 0:
+    """ROA % = net_profit / total_assets * 100. Returns None if total_assets == 0 or net_profit missing."""
+    if total_assets is None or total_assets == 0 or net_profit is None:
         return None
     return (net_profit / total_assets) * 100
 
@@ -130,6 +133,6 @@ def net_debt(borrowings, investments):
 
 def asset_turnover(sales, total_assets):
     """Asset Turnover = sales / total_assets. Returns None if total_assets == 0."""
-    if total_assets is None or total_assets == 0:
+    if total_assets is None or total_assets == 0 or sales is None:
         return None
     return sales / total_assets
