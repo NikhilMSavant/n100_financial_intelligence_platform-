@@ -39,3 +39,13 @@
   works generically off the broad_sector field regardless of count, so this
   discrepancy doesn't block the carve-out - it's a data/classification note
   only.
+
+## Screener preview (Day 14)
+- Raw screener (ROE>15% & D/E<1) returns 38 companies, but the top 3
+  (BEL, HAL, INDIGO) show impossible ROE values (900-4700%) due to the
+  understated equity/reserves data quality issue documented in Day 13's
+  ratio_edge_cases.log. Excluding these 3 known-bad outliers (ROE capped
+  at <200% as a sanity bound) gives 35 companies, all recognizable and
+  fundamentally sound Nifty 100 names - this is the credible, business-
+  sensible result. Any production screener should apply this same sanity
+  cap or exclude these specific data-quality-flagged tickers.
