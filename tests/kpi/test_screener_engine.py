@@ -10,7 +10,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src", "screener"))
 
-from engine import apply_filters
+from engine import apply_filters, load_screener_universe, run_preset, PRESETS
 
 
 def make_sample_df():
@@ -65,3 +65,24 @@ def test_06_combined_filters():
     # A passes both; C has None D/E so fails de_max (not Financials-exempt, not
     # a special-cased column); B fails ROE
     assert set(result["company_id"]) == {"A"}
+
+def test_07_all_presets_exist():
+    expected = {"Quality Compounder", "Value Pick", "Growth Accelerator",
+                "Dividend Champion", "Debt-Free Blue Chip", "Turnaround Watch"}
+    assert expected == set(PRESETS.keys())
+
+
+def test_08_unknown_preset_raises():
+    df = load_screener_universe()
+    try:
+        run_preset(df, "Not A Real Preset")
+        assert False, "expected ValueError"
+    except ValueError:
+        pass
+
+
+def test_09_all_presets_return_between_5_and_50():
+    df = load_screener_universe()
+    for preset_name in PRESETS:
+        result = run_preset(df, preset_name)
+        assert 5 <= len(result) <= 50, f"{preset_name} returned {len(result)} companies, expected 5-50"
