@@ -1,0 +1,57 @@
+# screener_config.yaml
+# Day 15 deliverable: analyst-editable threshold definitions for the
+# screener filter engine (src/screener/engine.py).
+#
+# Special handling (see engine.py docstrings for full rationale):
+#   - de_max: Financials-sector companies are exempt from this filter.
+#   - icr_min: Debt Free companies (null interest_coverage) always pass.
+
+filters:
+  roe_min:
+    description: "Minimum Return on Equity (%)"
+    column: return_on_equity_pct
+  roce_min:
+    description: "Minimum Return on Capital Employed (%)"
+    column: return_on_capital_employed_pct
+  de_max:
+    description: "Maximum Debt-to-Equity ratio (Financials sector exempt)"
+    column: debt_to_equity
+  fcf_min:
+    description: "Minimum Free Cash Flow (Cr)"
+    column: free_cash_flow_cr
+  revenue_cagr_5yr_min:
+    description: "Minimum 5-year Revenue CAGR (%)"
+    column: revenue_cagr_5yr
+  pat_cagr_5yr_min:
+    description: "Minimum 5-year PAT CAGR (%)"
+    column: pat_cagr_5yr
+  opm_min:
+    description: "Minimum Operating Profit Margin (%)"
+    column: operating_profit_margin_pct
+  pe_max:
+    description: "Maximum Price-to-Earnings ratio"
+    column: pe_ratio
+  pb_max:
+    description: "Maximum Price-to-Book ratio"
+    column: pb_ratio
+  dividend_yield_min:
+    description: "Minimum Dividend Yield (%)"
+    column: dividend_yield_pct
+  icr_min:
+    description: "Minimum Interest Coverage Ratio (Debt Free companies always pass)"
+    column: interest_coverage
+  market_cap_min:
+    description: "Minimum Market Cap (Cr)"
+    column: market_cap_crore
+  net_profit_min:
+    description: "Minimum Net Profit (Cr)"
+    column: net_profit
+  eps_cagr_5yr_min:
+    description: "Minimum 5-year EPS CAGR (%)"
+    column: eps_cagr_5yr
+  asset_turnover_min:
+    description: "Minimum Asset Turnover"
+    column: asset_turnover
+  sales_min:
+    description: "Minimum Sales (Cr)"
+    column: sales
