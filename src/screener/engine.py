@@ -27,8 +27,8 @@ def load_screener_universe(db_path=DB_PATH):
             fr.debt_to_equity, fr.free_cash_flow_cr, fr.revenue_cagr_5yr,
             fr.pat_cagr_5yr, fr.operating_profit_margin_pct, fr.interest_coverage,
             fr.eps_cagr_5yr, fr.asset_turnover, fr.dividend_payout_ratio_pct,
-            fr.revenue_cagr_3yr,
-            fr.composite_quality_score,
+            fr.revenue_cagr_3yr, fr.fcf_cagr_5yr, fr.cash_from_operations_cr,
+            fr.net_profit_margin_pct, fr.composite_quality_score,
             mc.pe_ratio, mc.pb_ratio, mc.dividend_yield_pct, mc.market_cap_crore,
             pl.net_profit, pl.sales,
             s.broad_sector

@@ -29,3 +29,15 @@
   large, typically well-covered/well-owned companies, not a broad value
   universe like small/mid caps.
 
+## FCF CAGR (Day 17)
+- fcf_cagr_5yr is null for ~46% of rows (627/1164), much higher than
+  revenue_cagr_3yr/5yr (~99% filled) or pat_cagr_5yr/eps_cagr_5yr.
+  Confirmed via direct inspection: of 91 companies with 5+ years of cash
+  flow history, only 49 have a clean positive-to-positive FCF trajectory
+  computable as a CAGR. The remaining 42 hit real sign-based edge cases
+  (17 BOTH_NEGATIVE, 15 TURNAROUND, 9 DECLINE_TO_LOSS) - FCF swings
+  negative far more often than sales/profit since heavy investment years
+  are a normal, healthy business pattern, not a data quality issue.
+- The composite score formula (Day 17) treats a null fcf_cagr_5yr as a
+  missing signal to skip, not a zero score, consistent with how
+  composite_quality_score (Sprint 2) already handles missing inputs.

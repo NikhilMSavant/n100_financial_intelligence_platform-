@@ -175,6 +175,7 @@ CREATE TABLE financial_ratios (
     cash_from_operations_cr         REAL,
     revenue_cagr_3yr                REAL,
     revenue_cagr_5yr                REAL,
+    fcf_cagr_5yr                    REAL,
     pat_cagr_5yr                    REAL,
     eps_cagr_5yr                    REAL,
     composite_quality_score         REAL,

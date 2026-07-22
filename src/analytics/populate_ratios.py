@@ -74,6 +74,15 @@ def main():
     pat_series = build_year_series(all_rows, "net_profit")
     eps_series = build_year_series(all_rows, "eps")
 
+    # FCF isn't a raw column - compute it per-row first, then build its
+    # own year-series for CAGR purposes (same pattern as sales/pat/eps above)
+    fcf_series = {}
+    for r in all_rows:
+        if r["year"] == "TTM":
+            continue
+        fcf_value = (r["operating_activity"] or 0) + (r["investing_activity"] or 0)
+        fcf_series.setdefault(r["company_id"], {})[r["year"]] = fcf_value
+
     output_rows = []
     for r in all_rows:
         cid, year = r["company_id"], r["year"]
@@ -93,6 +102,7 @@ def main():
         rev_cagr = compute_cagr_from_series(sales_series.get(cid, {}), 5)
         pat_cagr = compute_cagr_from_series(pat_series.get(cid, {}), 5)
         eps_cagr = compute_cagr_from_series(eps_series.get(cid, {}), 5)
+        fcf_cagr = compute_cagr_from_series(fcf_series.get(cid, {}), 5)
         quality_score = composite_quality_score(
             roe, de_result["value"], icr_result["value"], icr_result["icr_label"],
             r["operating_activity"], r["net_profit"]
@@ -115,6 +125,7 @@ def main():
             "cash_from_operations_cr": r["operating_activity"],
             "revenue_cagr_3yr": rev_cagr_3yr["value"],
             "revenue_cagr_5yr": rev_cagr["value"],
+            "fcf_cagr_5yr": fcf_cagr["value"],
             "pat_cagr_5yr": pat_cagr["value"],
             "eps_cagr_5yr": eps_cagr["value"],
             "composite_quality_score": quality_score,
@@ -129,13 +140,13 @@ def main():
             return_on_equity_pct, return_on_capital_employed_pct, debt_to_equity, interest_coverage, asset_turnover,
             free_cash_flow_cr, capex_cr, earnings_per_share, book_value_per_share,
             dividend_payout_ratio_pct, total_debt_cr, cash_from_operations_cr,
-            revenue_cagr_3yr, revenue_cagr_5yr, pat_cagr_5yr, eps_cagr_5yr, composite_quality_score
+            revenue_cagr_3yr, revenue_cagr_5yr, fcf_cagr_5yr, pat_cagr_5yr, eps_cagr_5yr, composite_quality_score
         ) VALUES (
             :company_id, :year, :net_profit_margin_pct, :operating_profit_margin_pct,
             :return_on_equity_pct, :return_on_capital_employed_pct, :debt_to_equity, :interest_coverage, :asset_turnover,
             :free_cash_flow_cr, :capex_cr, :earnings_per_share, :book_value_per_share,
             :dividend_payout_ratio_pct, :total_debt_cr, :cash_from_operations_cr,
-            :revenue_cagr_3yr, :revenue_cagr_5yr, :pat_cagr_5yr, :eps_cagr_5yr, :composite_quality_score
+            :revenue_cagr_3yr, :revenue_cagr_5yr, :fcf_cagr_5yr, :pat_cagr_5yr, :eps_cagr_5yr, :composite_quality_score
         )
     """, output_rows)
     conn.commit()
