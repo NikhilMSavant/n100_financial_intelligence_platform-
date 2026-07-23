@@ -197,3 +197,14 @@ CREATE INDEX idx_cf_company ON cashflow(company_id);
 CREATE INDEX idx_sp_company ON stock_prices(company_id);
 CREATE INDEX idx_fr_company ON financial_ratios(company_id);
 CREATE INDEX idx_mc_company ON market_cap(company_id);
+
+CREATE TABLE peer_percentiles (
+    id                  INTEGER PRIMARY KEY,
+    company_id          TEXT NOT NULL,
+    peer_group_name     TEXT,          -- NULL for companies with no peer group
+    metric              TEXT,
+    value               REAL,
+    percentile_rank     REAL,
+    year                TEXT,
+    FOREIGN KEY (company_id) REFERENCES companies(company_id)
+);
