@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src", "s
 
 from composite_score import (
     compute_weighted_score, winsorize_scale, sanitize_known_bad_values,
-    KNOWN_BAD_ROE_ROCE_COMPANIES, _weighted_average,
+    KNOWN_BAD_ROE_ROCE_COMPANIES, _weighted_average, winsorize_scale_by_sector,
 )
 
 
@@ -69,3 +69,25 @@ def test_07_sanitize_known_bad_nulls_roe_roce():
 
 def test_08_known_bad_company_list_matches_sprint2_findings():
     assert KNOWN_BAD_ROE_ROCE_COMPANIES == {"BEL", "HAL", "INDIGO", "LT", "PNB"}
+
+
+def test_09_sector_relative_scoring_differs_by_sector():
+    series = pd.Series([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    sectors = pd.Series(["A"] * 6 + ["B"] * 2 + ["C"] * 2)
+    result = winsorize_scale_by_sector(series, sectors)
+    # sector A (6 companies, big enough) should show real within-sector spread
+    assert result.iloc[0] == 0.0
+    assert result.iloc[5] == 100.0
+
+
+def test_10_small_sector_falls_back_to_universe_wide():
+    series = pd.Series([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    sectors = pd.Series(["A"] * 6 + ["B"] * 2 + ["C"] * 2)
+    result = winsorize_scale_by_sector(series, sectors)
+    universe_wide = winsorize_scale(series)
+    # sector B and C (2 companies each, below MIN_SECTOR_SIZE) should match
+    # the universe-wide scaling exactly, not a degenerate 2-point scale
+    assert result.iloc[6] == universe_wide.iloc[6]
+    assert result.iloc[7] == universe_wide.iloc[7]
+    assert result.iloc[8] == universe_wide.iloc[8]
+    assert result.iloc[9] == universe_wide.iloc[9]

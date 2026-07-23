@@ -103,6 +103,53 @@ def winsorize_scale(series, exclude_from_boundaries=None):
     return series.apply(scale_one)
 
 
+MIN_SECTOR_SIZE_FOR_RELATIVE_SCORING = 5
+
+
+def winsorize_scale_by_sector(series, sector_series, exclude_from_boundaries=None):
+    """
+    Sector-relative version of winsorize_scale(): computes P10/P90
+    separately within each broad_sector, so a company's score reflects
+    performance vs its own sector peers, not the whole 92-company universe.
+
+    Sectors with fewer than MIN_SECTOR_SIZE_FOR_RELATIVE_SCORING companies
+    fall back to universe-wide winsorization instead - with only 1-4
+    companies, a within-sector P10/P90 isn't statistically meaningful (it
+    would just be interpolating between a couple of raw values, not a
+    real percentile), so those companies are compared against the full
+    universe instead, which is a more honest comparison than a fake
+    sector-relative number.
+
+    series, sector_series: same index (typically company_id positions).
+    """
+    result = pd.Series(index=series.index, dtype=float)
+
+    sector_counts = sector_series.value_counts()
+    small_sectors = set(sector_counts[sector_counts < MIN_SECTOR_SIZE_FOR_RELATIVE_SCORING].index)
+
+    # universe-wide fallback boundaries, computed once, used for small sectors
+    universe_exclude = exclude_from_boundaries if exclude_from_boundaries is not None else pd.Series(False, index=series.index)
+    universe_scaled = winsorize_scale(series, exclude_from_boundaries=universe_exclude)
+
+    for sector in sector_series.dropna().unique():
+        sector_mask = sector_series == sector
+
+        if sector in small_sectors:
+            result[sector_mask] = universe_scaled[sector_mask]
+            continue
+
+        sector_exclude = exclude_from_boundaries[sector_mask] if exclude_from_boundaries is not None else None
+        sector_scaled = winsorize_scale(series[sector_mask], exclude_from_boundaries=sector_exclude)
+        result[sector_mask] = sector_scaled
+
+    # companies with no sector at all also fall back to universe-wide
+    no_sector_mask = sector_series.isna()
+    if no_sector_mask.any():
+        result[no_sector_mask] = universe_scaled[no_sector_mask]
+
+    return result
+
+
 def compute_weighted_score(
     roe_score, roce_score, npm_score,
     fcf_cagr_score, cfo_pat_score, fcf_positive_score,
@@ -148,25 +195,31 @@ def compute_scores_for_universe(df):
     )
     fcf_positive_raw = df["free_cash_flow_cr"].apply(lambda v: 100.0 if pd.notna(v) and v > 0 else (0.0 if pd.notna(v) else None))
 
-    # winsorize each metric (excluding known-bad companies from boundary-setting
-    # only for ROE/ROCE, since those are the ones with confirmed broken values)
-    roe_score = winsorize_scale(df["return_on_equity_pct"], exclude_from_boundaries=known_bad_mask)
-    roce_score = winsorize_scale(df["return_on_capital_employed_pct"], exclude_from_boundaries=known_bad_mask)
-    npm_score = winsorize_scale(df["net_profit_margin_pct"])
-    fcf_cagr_score = winsorize_scale(df["fcf_cagr_5yr"])
-    cfo_pat_score = winsorize_scale(cfo_pat_ratio)
-    revenue_cagr_score = winsorize_scale(df["revenue_cagr_5yr"])
-    pat_cagr_score = winsorize_scale(df["pat_cagr_5yr"])
+    # Per spec: "compute sector-relative composite score - normalise
+    # within each broad_sector so scores reflect performance vs sector
+    # peers". Uses winsorize_scale_by_sector() for all 9 sub-metrics,
+    # which falls back to universe-wide winsorization for sectors too
+    # small to support a meaningful within-sector percentile (see
+    # MIN_SECTOR_SIZE_FOR_RELATIVE_SCORING).
+    sectors = df["broad_sector"]
 
-    # D/E: winsorize normally, then invert so LOW D/E = HIGH score
-    de_score_raw = winsorize_scale(df["debt_to_equity"])
+    roe_score = winsorize_scale_by_sector(df["return_on_equity_pct"], sectors, exclude_from_boundaries=known_bad_mask)
+    roce_score = winsorize_scale_by_sector(df["return_on_capital_employed_pct"], sectors, exclude_from_boundaries=known_bad_mask)
+    npm_score = winsorize_scale_by_sector(df["net_profit_margin_pct"], sectors)
+    fcf_cagr_score = winsorize_scale_by_sector(df["fcf_cagr_5yr"], sectors)
+    cfo_pat_score = winsorize_scale_by_sector(cfo_pat_ratio, sectors)
+    revenue_cagr_score = winsorize_scale_by_sector(df["revenue_cagr_5yr"], sectors)
+    pat_cagr_score = winsorize_scale_by_sector(df["pat_cagr_5yr"], sectors)
+
+    # D/E: winsorize (sector-relative) then invert so LOW D/E = HIGH score
+    de_score_raw = winsorize_scale_by_sector(df["debt_to_equity"], sectors)
     de_score = de_score_raw.apply(lambda v: (100 - v) if pd.notna(v) else None)
 
     # ICR: Debt Free companies get the best possible score (100) directly;
-    # everyone else is winsorized normally
+    # everyone else is winsorized sector-relative
     icr_score = df["interest_coverage"].copy()
     is_debt_free = icr_score.isna()
-    icr_winsorized = winsorize_scale(icr_score)
+    icr_winsorized = winsorize_scale_by_sector(icr_score, sectors)
     icr_final = icr_winsorized.where(~is_debt_free, 100.0)
 
     scores = []
