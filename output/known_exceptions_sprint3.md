@@ -66,3 +66,25 @@
   In practice, this means red never appears in any of the 6 sheets. This
   is an inherent result of the spec's own two requirements combined, not
   a shortfall in the implementation.
+
+## IMPORTANT: loader.py + populate_ratios.py must always run together
+- `python src/etl/loader.py` drops and reloads ALL tables from the raw
+  source Excel files, including financial_ratios - which reverts it to
+  only the original source columns (ROE, D/E, FCF, etc.), wiping out every
+  column WE compute (revenue_cagr_3yr/5yr, fcf_cagr_5yr, pat_cagr_5yr,
+  eps_cagr_5yr, return_on_capital_employed_pct, composite_quality_score).
+- Any time the schema changes and loader.py is re-run, populate_ratios.py
+  MUST be re-run immediately afterward, or every downstream computed
+  column (and anything reading from it - screener presets, peer
+  percentiles, composite scores) will silently see NULLs and produce
+  wrong/empty results. This caused a real test failure (Quality Compounder
+  returning 0 companies) during Day 18 when this pairing was missed.
+
+## Radar chart filenames (Day 19)
+- Spec format is `<company_id>_radar.png`. One ticker, M&M (Mahindra &
+  Mahindra), contains a `&` character that is awkward/unsafe in
+  filenames. Sanitized to `MANDM_radar.png` (& -> AND). All other 91
+  companies use their exact company_id as-is.
+- All 92 companies have a chart: 56 with real peer-group radar overlays,
+  36 with the standalone Nifty 100 average comparison (per spec's
+  handling for companies with no peer group assigned).
