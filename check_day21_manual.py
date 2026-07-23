@@ -21,3 +21,14 @@ rows = conn.execute("""
 """).fetchall()
 for r in rows:
     print(r)
+
+
+print("\n=== FMCG peer ranking check ===")
+rows = conn.execute("""
+    SELECT company_id, value, percentile_rank
+    FROM peer_percentiles
+    WHERE peer_group_name = 'FMCG' AND metric = 'roe'
+    ORDER BY value DESC
+""").fetchall()
+for r in rows:
+    print(r)

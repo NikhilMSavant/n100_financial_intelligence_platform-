@@ -110,3 +110,10 @@
 - IT Services peer ranking: confirmed perfectly monotonic - TCS (highest
   ROE, 50.9%) has percentile 1.0, down to TECHM (lowest ROE, 9.0%) at 0.0.
   Matches spec's exit criteria exactly.
+
+## FMCG peer ranking spot-check (exit criteria, completing Day 21)
+- Confirmed perfectly monotonic, same as IT Services: NESTLEIND (highest
+  ROE, 117.8%) has percentile 1.0, down through BRITANNIA, ITC, HINDUNILVR,
+  DABUR, TATACONSUM, to GODREJCP (lowest, actually negative ROE at -4.5%)
+  at percentile 0.0. Both peer groups named in the exit criteria
+  ("spot-checking IT Services and FMCG groups") are now verified.
