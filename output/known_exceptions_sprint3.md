@@ -41,3 +41,28 @@
 - The composite score formula (Day 17) treats a null fcf_cagr_5yr as a
   missing signal to skip, not a zero score, consistent with how
   composite_quality_score (Sprint 2) already handles missing inputs.
+
+## Preset counts shifted after composite score sanitization (Day 17)
+- Quality Compounder: 23 -> 21 companies (LT and INDIGO dropped)
+- Debt-Free Blue Chip: 13 -> 12 companies (INDIGO dropped)
+- Cause: both presets filter on roe_min, and both companies previously
+  passed only because of their known-broken ROE values (see Sprint 2 Day
+  13's DATA_SOURCE_ISSUE findings). Once sanitize_known_bad_values() nulls
+  their ROE for scoring purposes, they correctly fail the roe_min filter
+  instead of passing on bad data. This is a correctness improvement, not
+  a regression - confirmed by direct diff of before/after company sets.
+- All 6 presets remain within the 5-50 required range after this change.
+
+## Screener output color-coding (Day 17)
+- Built exactly to spec: green fill for cells meeting that preset's own
+  threshold criteria, red for cells failing it - no additional metrics
+  colored beyond what each preset explicitly filters on.
+- Consequence (not a bug): since run_preset() already filters out any
+  company failing a preset's criteria before the sheet is built, every
+  remaining row's threshold-column cells are necessarily green - red can
+  only theoretically appear via a sector-exemption edge case (D/E for
+  Financials-sector companies), which is deliberately shown as green
+  too, since sector-exempt inclusion is a legitimate pass, not a failure.
+  In practice, this means red never appears in any of the 6 sheets. This
+  is an inherent result of the spec's own two requirements combined, not
+  a shortfall in the implementation.
