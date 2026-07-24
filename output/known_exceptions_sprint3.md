@@ -117,3 +117,49 @@
   DABUR, TATACONSUM, to GODREJCP (lowest, actually negative ROE at -4.5%)
   at percentile 0.0. Both peer groups named in the exit criteria
   ("spot-checking IT Services and FMCG groups") are now verified.
+
+## Sector-relative composite scoring (Gap 2 fix, post-Day-21 review)
+- Spec explicitly requires: "Compute sector-relative composite score -
+  normalise within each broad_sector so scores reflect performance vs
+  sector peers." Originally missed - initial implementation winsorized
+  across the full 92-company universe, not per-sector.
+- Fixed via winsorize_scale_by_sector() in composite_score.py, applied to
+  all 9 sub-metrics feeding the final composite score.
+- Sectors with fewer than 5 companies (Real Estate: 2, Communication
+  Services: 2) fall back to universe-wide winsorization instead of
+  within-sector, since a P10/P90 computed from only 1-4 data points isn't
+  statistically meaningful - it would just interpolate between a couple
+  of raw values, not represent a real percentile distribution.
+- Effect: Quality Compounder's top 5 shifted from
+  IRCTC/TRENT/ADANIPOWER/LTIM/ASIANPAINT to
+  ASIANPAINT/IRCTC/ADANIPOWER/PIDILITIND/NESTLEIND - Consumer
+  Staples/Materials companies (NESTLEIND, PIDILITIND) now rank higher
+  since they're compared against sector peers with similar margin
+  profiles, rather than against IT/Financials companies with
+  structurally different economics. All 111 tests still pass; all 6
+  presets remain within the 5-50 required range.
+
+## Day 15 gap fix: engine.py returns sorted, scored DataFrame
+- Added get_scored_universe() to engine.py, satisfying the literal Day 15
+  requirement ("Return sorted DataFrame with composite_quality_score
+  column added") directly from the filter engine module, rather than
+  only achieving this downstream in the Day 17 Excel export step.
+- Reuses Day 17's sector-relative compute_scores_for_universe().
+- 1 new unit test confirming 92 companies, sorted descending, with
+  final_composite_score present.
+
+## DQ rule unit tests (Gap #2 fix, closing the Day 21 exit criteria gap)
+- Refactored validator.py: each of the 16 DQ rules extracted from the
+  monolithic run() function into an independently-callable, pure
+  check_dq*() function (input: DataFrame, output: list of findings).
+  Verified the refactor preserved EXACT behavior - re-ran against the
+  live database and got identical results (881 findings, 3 CRITICAL,
+  878 WARNING, same per-rule breakdown) before and after.
+- Added tests/etl/test_dq_rules.py: 18 unit tests using synthetic data
+  (16 rules, with DQ-01 and DQ-16 each getting an extra case for their
+  negative/critical-severity paths), each crafted to trigger or not
+  trigger the specific rule being tested.
+- This closes the spec's "14 DQ rule unit tests" exit criterion. We have
+  16 rules (not 14 - documented spec/reality mismatch elsewhere), and
+  they are now genuinely pytest-tested, not just run as a script against
+  live data.

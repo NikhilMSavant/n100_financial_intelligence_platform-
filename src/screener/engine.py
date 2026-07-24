@@ -7,7 +7,12 @@ fiscal year per company) into one DataFrame with all 15 filterable metrics
 as columns, then applies threshold filters from screener_config.yaml.
 """
 import sqlite3
+import os
+import sys
 import pandas as pd
+
+sys.path.insert(0, os.path.dirname(__file__))
+from composite_score import compute_scores_for_universe
 
 DB_PATH = "db/nifty100.db"
 
@@ -150,6 +155,21 @@ def apply_filters(df, filters):
             result = result[result[column] <= threshold]
 
     return result
+
+
+def get_scored_universe(db_path=DB_PATH):
+    """
+    Day 15 literal requirement: 'Return sorted DataFrame with
+    composite_quality_score column added.' Loads the full universe,
+    computes the composite score for every company (via Day 17's
+    sector-relative scoring engine), and returns it sorted descending
+    by score - so engine.py is self-sufficient for this requirement,
+    rather than only achieving it downstream in the Excel export step.
+    """
+    df = load_screener_universe(db_path)
+    df = compute_scores_for_universe(df)
+    df = df.sort_values("final_composite_score", ascending=False)
+    return df
 
 
 if __name__ == "__main__":

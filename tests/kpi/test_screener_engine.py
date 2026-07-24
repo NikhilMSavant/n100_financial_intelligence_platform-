@@ -10,7 +10,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src", "screener"))
 
-from engine import apply_filters, load_screener_universe, run_preset, PRESETS
+from engine import apply_filters, load_screener_universe, run_preset, PRESETS, get_scored_universe
 
 
 def make_sample_df():
@@ -86,3 +86,13 @@ def test_09_all_presets_return_between_5_and_50():
     for preset_name in PRESETS:
         result = run_preset(df, preset_name)
         assert 5 <= len(result) <= 50, f"{preset_name} returned {len(result)} companies, expected 5-50"
+
+
+def test_10_get_scored_universe_returns_sorted_scored_dataframe():
+    """Day 15 literal requirement: engine.py itself returns a sorted
+    DataFrame with composite score added, not just via a downstream
+    export step."""
+    df = get_scored_universe()
+    assert len(df) == 92
+    assert "final_composite_score" in df.columns
+    assert df["final_composite_score"].is_monotonic_decreasing
