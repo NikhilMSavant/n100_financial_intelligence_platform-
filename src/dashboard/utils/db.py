@@ -21,10 +21,19 @@ def _connect():
 
 @st.cache_data(ttl=600)
 def get_companies():
-    """Returns all 92 companies with basic profile info."""
+    """
+    Returns all 92 companies with basic profile info.
+
+    Fixes a real data quality issue found in company_name: 17 companies
+    have extra content after a newline character (either just trailing
+    whitespace, or in 2 cases - APOLLOHOSP, ASIANPAINT - a company
+    description that leaked into the name field from the source Excel
+    file). Takes only the text before the first newline as the real name.
+    """
     conn = _connect()
     df = pd.read_sql("SELECT * FROM companies", conn)
     conn.close()
+    df["company_name"] = df["company_name"].str.split("\n").str[0].str.strip()
     return df
 
 
@@ -207,3 +216,32 @@ def get_top5_by_composite_score():
     df = compute_scores_for_universe(df)
     df = df.sort_values("final_composite_score", ascending=False)
     return df[["company_id", "final_composite_score"]].head(5).reset_index(drop=True)
+
+
+@st.cache_data(ttl=600)
+def search_companies(query_text):
+    """
+    Day 23: searches companies by ticker or name (case-insensitive,
+    partial match). Returns matching company_ids and names for the
+    Company Profile screen's autocomplete-style search box.
+    """
+    companies = get_companies()
+    query_lower = query_text.lower().strip()
+    if not query_lower:
+        return companies[["company_id", "company_name"]]
+
+    mask = (
+        companies["company_id"].str.lower().str.contains(query_lower, na=False) |
+        companies["company_name"].str.lower().str.contains(query_lower, na=False)
+    )
+    return companies[mask][["company_id", "company_name"]]
+
+
+@st.cache_data(ttl=600)
+def get_pros_cons(ticker):
+    """Returns pros/cons row for a ticker, if available (only ~16 companies
+    have this data per Sprint 1 - most will return empty)."""
+    conn = _connect()
+    df = pd.read_sql("SELECT * FROM prosandcons WHERE company_id = ?", conn, params=(ticker,))
+    conn.close()
+    return df
