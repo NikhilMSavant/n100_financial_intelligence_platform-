@@ -10,3 +10,9 @@
   first newline - applies globally to every dashboard screen that uses
   this function, not just the Company Profile page where it was found.
   
+## CSV download scope fix (Day 24)
+- Spec: "CSV download button generates well-formed CSV with all visible
+  columns." Initial implementation exported the full 24-column internal
+  dataframe, not just the 6 columns actually shown in the on-screen
+  table. Fixed to export result[display_cols] instead of the full
+  result dataframe.
