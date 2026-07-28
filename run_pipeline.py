@@ -24,6 +24,7 @@ STEPS = [
     ("Generate radar charts", ["python", "src/analytics/radar.py"]),
     ("Generate capital_allocation.csv", ["python", "src/analytics/generate_capital_allocation.py"]),
     ("Generate ratio_edge_cases.log", ["python", "src/analytics/edge_case_log.py"]),
+    ("Generate valuation_summary.xlsx and valuation_flags.csv", ["python", "src/analytics/valuation.py"]),
     ("Generate screener_output.xlsx", ["python", "src/screener/export_screener.py"]),
     ("Generate peer_comparison.xlsx", ["python", "src/analytics/export_peer_comparison.py"]),
 ]
