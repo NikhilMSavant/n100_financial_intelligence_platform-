@@ -103,18 +103,20 @@ pros_cons = get_pros_cons(selected_ticker)
 if pros_cons.empty:
     st.info("No pros/cons data available for this company")
 else:
-    row = pros_cons.iloc[0]
-    pros_text = row.get("pros", "")
-    cons_text = row.get("cons", "")
+    # Some companies (e.g. INFY) have multiple pros/cons rows, not just
+    # one - combine all rows' text rather than silently showing only
+    # the first (found during Day 27 QA testing).
+    all_pros = "\n".join(str(v) for v in pros_cons["pros"].dropna())
+    all_cons = "\n".join(str(v) for v in pros_cons["cons"].dropna())
 
     col_pros, col_cons = st.columns(2)
     with col_pros:
         st.markdown("**Pros**")
-        for line in str(pros_text).split("\n"):
+        for line in all_pros.split("\n"):
             if line.strip():
                 st.success(f"✅ {line.strip()}")
     with col_cons:
         st.markdown("**Cons**")
-        for line in str(cons_text).split("\n"):
+        for line in all_cons.split("\n"):
             if line.strip():
                 st.error(f"❌ {line.strip()}")
