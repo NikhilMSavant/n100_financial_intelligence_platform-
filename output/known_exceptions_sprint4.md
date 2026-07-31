@@ -66,3 +66,45 @@
 - Company Profile load time: backend data queries measured at 7-26ms
   for 5 tickers (TCS, RELIANCE, HDFCBANK, INFY, ASIANPAINT), and real
   browser page loads confirmed well under the 3-second requirement.
+
+## Sprint 4 cross-verification (post-Day-28 review)
+Went back through the Sprint 4 spec line-by-line before starting Sprint 5,
+same rigor as Sprint 3's cross-verification. Found and fixed 4 issues:
+
+1. **Sector donut chart "11 sectors" claim** - spec says 11, actual data
+   has exactly 10 distinct broad_sector values. Same spec/reality count
+   mismatch pattern seen elsewhere in the project (likely conflating the
+   11 peer groups with broad sectors, which are different groupings).
+   The chart correctly shows all 10 real sectors; not a bug to fix.
+
+2. **Company Profile card missing sector/sub-sector/NSE ticker** - spec
+   explicitly lists these; only name and description were shown. Fixed
+   to display all 5 required fields.
+
+3. **ROE/ROCE chart was single-axis, not "dual-axis"** as spec explicitly
+   requires. Fixed to give ROE and ROCE independently-scaled, color-coded
+   axes (matching the same approach used in Trend Analysis).
+
+4. **Screener results table missing company_name and sector columns** -
+   spec explicitly lists these. Fixed to merge them in from get_companies()
+   and get_sectors() (reusing the Day 23 name-cleaning fix, not a raw
+   duplicate query) for both the table display and the CSV export.
+
+## Real data quality bug found: ABB / Abbott India name swap
+- companies.xlsx has ticker ABB (ABB India Ltd - industrial automation,
+  subsidiary of Switzerland's ABB Ltd) mapped to "Abbott India Ltd"'s
+  name and description (an unrelated pharmaceutical company). Confirmed
+  via web search and cross-checked against the about_company text, which
+  unambiguously describes Abbott's pharma business, not ABB's automation
+  business.
+- Verified this affects DISPLAY ONLY: searched every file referencing
+  company_name and confirmed none use it for filtering, joining, or
+  computation - every calculation throughout all 4 sprints has correctly
+  used company_id (ticker) as the key. ABB's financial data, ratios,
+  screener results, peer rankings, and valuation flag have always been
+  correct; only the human-readable label was wrong.
+- Fixed permanently in loader.py via a COMPANY_NAME_CORRECTIONS dict
+  applied immediately after the companies table loads, so the correction
+  survives every future run_pipeline.py execution rather than being
+  silently reverted by the next reload from the raw (still-wrong)
+  companies.xlsx source file.

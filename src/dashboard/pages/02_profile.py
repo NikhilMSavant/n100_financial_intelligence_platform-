@@ -12,8 +12,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "utils"))
-from db import get_companies, get_ratios, get_pl, search_companies, get_pros_cons
-
+from db import get_companies, get_ratios, get_pl, search_companies, get_pros_cons, get_sectors
 st.set_page_config(page_title="Company Profile", layout="wide")
 st.title("Company Profile")
 
@@ -44,7 +43,17 @@ if company_row.empty:
 company = company_row.iloc[0]
 
 # --- Company card ---
+sectors_df = get_sectors()
+sector_row = sectors_df[sectors_df["company_id"] == selected_ticker]
+broad_sector = sector_row.iloc[0]["broad_sector"] if not sector_row.empty else "N/A"
+sub_sector = sector_row.iloc[0]["sub_sector"] if not sector_row.empty else "N/A"
+nse_ticker = company.get("nse_profile", "N/A")
+
 st.subheader(f"{company['company_name']} ({selected_ticker})")
+info_col1, info_col2, info_col3 = st.columns(3)
+info_col1.markdown(f"**Sector:** {broad_sector}")
+info_col2.markdown(f"**Sub-sector:** {sub_sector}")
+info_col3.markdown(f"**NSE Ticker:** {nse_ticker}")
 st.write(company.get("about_company", "No description available"))
 
 st.divider()
@@ -89,9 +98,20 @@ if ratios_chart.empty:
     st.info("No ratio history available for this company")
 else:
     fig_line = go.Figure()
-    fig_line.add_trace(go.Scatter(x=ratios_chart["year"], y=ratios_chart["return_on_equity_pct"], name="ROE %", mode="lines+markers"))
-    fig_line.add_trace(go.Scatter(x=ratios_chart["year"], y=ratios_chart["return_on_capital_employed_pct"], name="ROCE %", mode="lines+markers"))
-    fig_line.update_layout(height=400, xaxis_title="Fiscal Year", yaxis_title="%", xaxis_type="category")
+    fig_line.add_trace(go.Scatter(
+        x=ratios_chart["year"], y=ratios_chart["return_on_equity_pct"],
+        name="ROE %", mode="lines+markers", yaxis="y", line=dict(color="#2563eb"),
+    ))
+    fig_line.add_trace(go.Scatter(
+        x=ratios_chart["year"], y=ratios_chart["return_on_capital_employed_pct"],
+        name="ROCE %", mode="lines+markers", yaxis="y2", line=dict(color="#dc2626"),
+    ))
+    fig_line.update_layout(
+        height=400, xaxis_title="Fiscal Year", xaxis_type="category",
+        yaxis=dict(title=dict(text="ROE %", font=dict(color="#2563eb")), tickfont=dict(color="#2563eb")),
+        yaxis2=dict(title=dict(text="ROCE %", font=dict(color="#dc2626")), tickfont=dict(color="#dc2626"),
+                    overlaying="y", side="right"),
+    )
     st.plotly_chart(fig_line, use_container_width=True)
 
 st.divider()

@@ -1,5 +1,5 @@
 company_id,company_name,sector,pe_ratio,pb_ratio,ev_ebitda,fcf_yield_pct,5yr_median_PE,PE_vs_sector_median_pct,flag
-ABB,Abbott India Ltd,Industrials,75.58,4.48,12.63,0.051880041574855706,62.63,60.27992789735976,Caution
+ABB,ABB India Ltd,Industrials,75.58,4.48,12.63,0.051880041574855706,62.63,60.27992789735976,Caution
 BAJAJFINSV,Bajaj Finserv Ltd,Financials,15.07,6.08,39.72,-4.180016339930263,51.06,-55.987149532710276,Discount
 BAJFINANCE,Bajaj Finance Ltd,Financials,69.2,4.11,15.96,-3.2317922805711454,46.9,102.10280373831775,Caution
 BANKBARODA,Bank of Baroda,Financials,16.89,4.15,24.7,-1.279081332956056,67.24,-50.671728971962615,Discount

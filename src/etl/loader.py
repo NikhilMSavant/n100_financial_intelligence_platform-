@@ -17,6 +17,41 @@ from datetime import datetime
 
 import pandas as pd
 
+# Known source-data errors in companies.xlsx, corrected post-load so they
+# don't need re-discovering every time the pipeline runs. Found during
+# Sprint 4 Day 27 cross-verification: the ABB row contained Abbott India's
+# name and description instead of ABB India's (confirmed via web search -
+# ABB India is an industrial automation/electrification company, a
+# subsidiary of Switzerland's ABB Ltd; Abbott India is an unrelated
+# pharmaceutical company). This does not affect any financial data or
+# calculations (verified: company_name is used only for display
+# throughout the codebase, never for filtering/joining/computation) -
+# only the human-readable name/description was wrong.
+COMPANY_NAME_CORRECTIONS = {
+    "ABB": {
+        "company_name": "ABB India Ltd",
+        "about_company": (
+            "ABB India Ltd is a subsidiary of the Swiss-Swedish multinational "
+            "ABB Ltd, and is a leader in electrification and automation. It "
+            "operates through four business segments: Electrification, Motion, "
+            "Robotics and Discrete Automation, and Process Automation, serving "
+            "utilities, industries, and OEMs across India and internationally."
+        ),
+    },
+}
+
+
+def apply_known_data_corrections(conn):
+    """Applies COMPANY_NAME_CORRECTIONS after the companies table is
+    loaded, so known source-data errors don't silently reappear on every
+    pipeline re-run."""
+    for company_id, corrections in COMPANY_NAME_CORRECTIONS.items():
+        set_clause = ", ".join(f"{col} = ?" for col in corrections)
+        values = list(corrections.values()) + [company_id]
+        conn.execute(f"UPDATE companies SET {set_clause} WHERE company_id = ?", values)
+    conn.commit()
+
+
 sys.path.insert(0, os.path.dirname(__file__))
 from normaliser import normalize_year, normalize_ticker
 
@@ -199,6 +234,10 @@ def main():
 
             write_table(conn, stem, clean_df)
             conn.commit()
+
+            if stem == "companies":
+                apply_known_data_corrections(conn)
+
             log_audit(stem, source_rows, len(clean_df), rejected, "OK")
             print(f"[OK] {stem:20s} source={source_rows:5d}  loaded={len(clean_df):5d}  rejected={rejected}")
         except Exception as e:

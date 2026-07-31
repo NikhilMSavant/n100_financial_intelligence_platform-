@@ -7,8 +7,10 @@ live-updating results table, CSV download, result count label.
 import streamlit as st
 import sys
 import os
+import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "screener"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "utils"))
 from engine import load_screener_universe, apply_filters, PRESETS
 from composite_score import compute_scores_for_universe
 
@@ -93,13 +95,23 @@ result = result.sort_values("final_composite_score", ascending=False)
 
 st.subheader(f"{len(result)} companies match your filters")
 
-display_cols = ["company_id", "return_on_equity_pct", "debt_to_equity",
+# Spec requires company_id, name, sector, composite score, and filtered
+# metrics - merge in name/sector, which weren't part of the screener
+# universe join used for filtering.
+from db import get_companies, get_sectors  # reuse the already-cleaned company_name (Day 23 fix)
+
+companies_clean = get_companies()[["company_id", "company_name"]]
+sectors_lookup = get_sectors()[["company_id", "broad_sector"]].rename(columns={"broad_sector": "sector"})
+name_sector = companies_clean.merge(sectors_lookup, on="company_id", how="left")
+result_display = result.merge(name_sector, on="company_id", how="left")
+
+display_cols = ["company_id", "company_name", "sector", "return_on_equity_pct", "debt_to_equity",
                  "free_cash_flow_cr", "revenue_cagr_5yr", "final_composite_score"]
-st.dataframe(result[display_cols], use_container_width=True, hide_index=True)
+st.dataframe(result_display[display_cols], use_container_width=True, hide_index=True)
 
 # --- CSV download ---
 # Spec: "generates well-formed CSV with all visible columns" - exports
 # exactly the display_cols shown in the on-screen table, not every raw
 # internal column, so the download matches what the user actually sees.
-csv_data = result[display_cols].to_csv(index=False)
+csv_data = result_display[display_cols].to_csv(index=False)
 st.download_button("Download results as CSV", csv_data, file_name="screener_results.csv", mime="text/csv")
