@@ -108,3 +108,39 @@ same rigor as Sprint 3's cross-verification. Found and fixed 4 issues:
   survives every future run_pipeline.py execution rather than being
   silently reverted by the next reload from the raw (still-wrong)
   companies.xlsx source file.
+
+## Preset buttons silently dropped each preset's special-case logic (post-Sprint-4 review)
+- 03_screener.py's preset buttons only pre-filled the sidebar sliders from
+  `PRESETS[name]` and then called `apply_filters()` - they never called
+  `run_preset()`, so any preset relying on logic beyond a simple
+  slider threshold silently lost that logic on the live dashboard, even
+  though `run_preset()` in engine.py has always been correct (and is
+  still what output/screener_output.xlsx correctly uses).
+- Concretely, comparing the dashboard's old behavior to the correct
+  `run_preset()` result on the real 92-company universe:
+  - Quality Compounder: 21 vs 21 (unaffected - no special-case logic)
+  - Value Pick: 7 vs 7 (unaffected)
+  - Growth Accelerator: 19 vs 19 (unaffected)
+  - Dividend Champion: dashboard showed 32, should be 29 (missing the
+    dividend_payout_ratio_pct < 80% condition)
+  - Debt-Free Blue Chip: dashboard showed 67, should be 12 (missing the
+    D/E < 0.05 + Financials-sector exclusion; only the roe_min part of
+    the preset was actually applied)
+  - Turnaround Watch: dashboard showed all 92 companies (the preset's
+    slider-representable filter dict is empty, `{}`, by design - all of
+    its logic is special-cased), should be 32
+- Fixed by tracking an `active_preset_name` in session_state: while a
+  preset is active, the page calls `run_preset(universe, active_preset)`
+  directly (sliders are shown for reference only); editing any slider or
+  checkbox clears the active preset (via `on_change=`) and reverts to
+  plain `apply_filters()` with the current slider values, so manual
+  filtering is unaffected.
+- Also fixed the results table/CSV to show whichever metric columns are
+  actually driving the current result (via engine.py's new module-level
+  `FILTER_COLUMN_MAP` / `PRESET_EXTRA_COLUMNS`), instead of the same
+  fixed 4-column subset regardless of which filters or preset are active.
+- Verified against engine.py's own test suite (all 10 tests in
+  tests/kpi/test_screener_engine.py still pass unchanged) and by
+  reproducing the corrected preset counts (21, 7, 19, 29, 12, 32),
+  which match the counts already documented and QA'd in
+  output/sprint3_retrospective.md.

@@ -16,6 +16,39 @@ from composite_score import compute_scores_for_universe
 
 DB_PATH = "db/nifty100.db"
 
+# Filter-key -> underlying column, shared by apply_filters() and by any
+# caller (e.g. the dashboard) that needs to know which data column a given
+# filter key corresponds to for display purposes.
+MIN_FILTER_COLUMNS = {
+    "roe_min": "return_on_equity_pct",
+    "roce_min": "return_on_capital_employed_pct",
+    "fcf_min": "free_cash_flow_cr",
+    "revenue_cagr_5yr_min": "revenue_cagr_5yr",
+    "pat_cagr_5yr_min": "pat_cagr_5yr",
+    "opm_min": "operating_profit_margin_pct",
+    "eps_cagr_5yr_min": "eps_cagr_5yr",
+    "asset_turnover_min": "asset_turnover",
+    "sales_min": "sales",
+    "net_profit_min": "net_profit",
+    "market_cap_min": "market_cap_crore",
+    "dividend_yield_min": "dividend_yield_pct",
+}
+MAX_FILTER_COLUMNS = {
+    "pe_max": "pe_ratio",
+    "pb_max": "pb_ratio",
+}
+FILTER_COLUMN_MAP = {**MIN_FILTER_COLUMNS, **MAX_FILTER_COLUMNS, "icr_min": "interest_coverage"}
+
+# Extra data columns some presets use via hardcoded logic in run_preset()
+# rather than through a generic filters{} key - not in FILTER_COLUMN_MAP,
+# but still relevant for a caller that wants to show "why" a company
+# matched a preset.
+PRESET_EXTRA_COLUMNS = {
+    "Dividend Champion": ["dividend_payout_ratio_pct"],
+    "Debt-Free Blue Chip": ["debt_to_equity"],
+    "Turnaround Watch": ["revenue_cagr_3yr", "free_cash_flow_cr", "debt_to_equity"],
+}
+
 
 def load_screener_universe(db_path=DB_PATH):
     """
@@ -125,31 +158,13 @@ def apply_filters(df, filters):
         result = result[is_debt_free | passes_icr]
 
     # --- simple min filters (column >= threshold) ---
-    min_filter_columns = {
-        "roe_min": "return_on_equity_pct",
-        "roce_min": "return_on_capital_employed_pct",
-        "fcf_min": "free_cash_flow_cr",
-        "revenue_cagr_5yr_min": "revenue_cagr_5yr",
-        "pat_cagr_5yr_min": "pat_cagr_5yr",
-        "opm_min": "operating_profit_margin_pct",
-        "eps_cagr_5yr_min": "eps_cagr_5yr",
-        "asset_turnover_min": "asset_turnover",
-        "sales_min": "sales",
-        "net_profit_min": "net_profit",
-        "market_cap_min": "market_cap_crore",
-        "dividend_yield_min": "dividend_yield_pct",
-    }
-    for filter_key, column in min_filter_columns.items():
+    for filter_key, column in MIN_FILTER_COLUMNS.items():
         if filter_key in filters:
             threshold = filters[filter_key]
             result = result[result[column] >= threshold]
 
     # --- simple max filters (column <= threshold) ---
-    max_filter_columns = {
-        "pe_max": "pe_ratio",
-        "pb_max": "pb_ratio",
-    }
-    for filter_key, column in max_filter_columns.items():
+    for filter_key, column in MAX_FILTER_COLUMNS.items():
         if filter_key in filters:
             threshold = filters[filter_key]
             result = result[result[column] <= threshold]
