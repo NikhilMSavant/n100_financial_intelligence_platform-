@@ -17,16 +17,16 @@ import subprocess
 import sys
 
 STEPS = [
-    ("Load all 12 source files into SQLite", ["python", "src/etl/loader.py"]),
-    ("Run 16 DQ rules validator", ["python", "src/etl/validator.py"]),
-    ("Compute and populate financial_ratios", ["python", "src/analytics/populate_ratios.py"]),
-    ("Compute peer percentile rankings", ["python", "src/analytics/peer.py"]),
-    ("Generate radar charts", ["python", "src/analytics/radar.py"]),
-    ("Generate capital_allocation.csv", ["python", "src/analytics/generate_capital_allocation.py"]),
-    ("Generate ratio_edge_cases.log", ["python", "src/analytics/edge_case_log.py"]),
-    ("Generate valuation_summary.xlsx and valuation_flags.csv", ["python", "src/analytics/valuation.py"]),
-    ("Generate screener_output.xlsx", ["python", "src/screener/export_screener.py"]),
-    ("Generate peer_comparison.xlsx", ["python", "src/analytics/export_peer_comparison.py"]),
+    ("Load all 12 source files into SQLite", [sys.executable, "src/etl/loader.py"]),
+    ("Run 16 DQ rules validator", [sys.executable, "src/etl/validator.py"]),
+    ("Compute and populate financial_ratios", [sys.executable, "src/analytics/populate_ratios.py"]),
+    ("Compute peer percentile rankings", [sys.executable, "src/analytics/peer.py"]),
+    ("Generate radar charts", [sys.executable, "src/analytics/radar.py"]),
+    ("Generate capital_allocation.csv", [sys.executable, "src/analytics/generate_capital_allocation.py"]),
+    ("Generate ratio_edge_cases.log", [sys.executable, "src/analytics/edge_case_log.py"]),
+    ("Generate valuation_summary.xlsx and valuation_flags.csv", [sys.executable, "src/analytics/valuation.py"]),
+    ("Generate screener_output.xlsx", [sys.executable, "src/screener/export_screener.py"]),
+    ("Generate peer_comparison.xlsx", [sys.executable, "src/analytics/export_peer_comparison.py"]),
 ]
 
 
