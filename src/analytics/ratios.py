@@ -136,3 +136,32 @@ def asset_turnover(sales, total_assets):
     if total_assets is None or total_assets == 0 or sales is None:
         return None
     return sales / total_assets
+
+
+def book_value_per_share(equity_capital, reserves, face_value):
+    """
+    Book Value per Share = (equity_capital + reserves) / shares_outstanding,
+    where shares_outstanding = equity_capital / face_value (equity_capital
+    and face_value must be in the same currency unit - Rs Crore and Rs
+    respectively here, which cancels out to shares in Crore; the Rs Cr
+    units on the numerator then cancel too, leaving a plain Rs-per-share
+    figure).
+
+    Added post-Sprint-4 full re-verification: this was previously left
+    permanently None with a comment claiming shares outstanding "isn't in
+    the current schema" - that turned out to be wrong. companies.face_value
+    (Rs per share) combined with balancesheet.equity_capital (Rs Cr) is
+    enough to derive shares outstanding without needing a separate column.
+    Verified against companies.book_value (a source reference figure) for
+    3 companies - within the same small version-difference range already
+    seen for ROE/ROCE in Day 13's edge-case log, not a formula error.
+
+    Returns None if face_value or equity_capital is missing/zero (can't
+    derive a share count).
+    """
+    if not face_value or not equity_capital:
+        return None
+    shares_outstanding = equity_capital / face_value
+    if shares_outstanding == 0:
+        return None
+    return (equity_capital + (reserves or 0)) / shares_outstanding

@@ -233,7 +233,6 @@ DQ-05,WARNING,profitandloss,INDIGO,year=2022-03: stated OPM 558.0% vs computed 9
 DQ-05,WARNING,profitandloss,INDIGO,year=2023-03: stated OPM 6521.0% vs computed 88.02%
 DQ-05,WARNING,profitandloss,INDIGO,year=2024-03: stated OPM 16331.0% vs computed 76.30%
 DQ-05,WARNING,profitandloss,INDIGO,year=TTM: stated OPM 15908.0% vs computed 79.20%
-DQ-06,CRITICAL,profitandloss,ADANIENSOL,year=2014-03: sales=0.0 <= 0
 DQ-07,WARNING,profitandloss,ADANIENT,year=2014-03: net_profit (2646.0) > profit_before_tax (1614.0)
 DQ-07,WARNING,profitandloss,ADANIENT,year=2018-03: net_profit (594.0) > profit_before_tax (487.0)
 DQ-07,WARNING,profitandloss,ADANIENT,year=2019-03: net_profit (506.0) > profit_before_tax (459.0)
@@ -315,7 +314,6 @@ DQ-08,WARNING,profitandloss,M&M,year=2020-03: eps=1.0 and net_profit=-321.0 have
 DQ-08,WARNING,profitandloss,NAUKRI,year=2015-03: eps=2.0 and net_profit=-14.0 have opposite signs
 DQ-08,WARNING,profitandloss,TATAPOWER,year=2014-03: eps=-1.0 and net_profit=12.0 have opposite signs
 DQ-09,WARNING,cashflow,TVSMOTOR,year=2022-03: stated net_cash_flow 532.0 vs computed -128.0 (diff 660.0 Cr)
-DQ-10,CRITICAL,balancesheet,ADANIENSOL,"year=2014-03: total_assets=0.0, total_liabilities=0.0"
 DQ-11,WARNING,profitandloss,ADANIENT,"year=2014-03: tax_percentage=-64.0% outside [0,60]"
 DQ-11,WARNING,profitandloss,ADANIGREEN,"year=2017-03: tax_percentage=-75.0% outside [0,60]"
 DQ-11,WARNING,profitandloss,ADANIGREEN,"year=2018-03: tax_percentage=-35.0% outside [0,60]"

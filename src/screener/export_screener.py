@@ -3,7 +3,26 @@ export_screener.py
 -------------------
 Day 17 deliverable: generates output/screener_output.xlsx - one sheet per
 preset, sorted by composite score descending, with green/red fill on
-cells that meet/fail that preset's own threshold criteria.
+cells that meet/fail a threshold criterion.
+
+Fixed post-Sprint-4 full re-verification: red never actually appeared
+anywhere in the original version. Root cause: cells were only colored
+against the CURRENT preset's own defining criteria, and every row in a
+preset's sheet has already passed those exact criteria by construction
+(that's why it's in the sheet) - so the "failing" branch was structurally
+unreachable on every cell, in every sheet, always.
+
+Fix: a preset's own defining columns are still always green (correctly -
+they really did pass), but every OTHER displayed column is now also
+color-checked against whichever OTHER preset defines a threshold for that
+column (see FOREIGN_THRESHOLDS below) - e.g. a Quality Compounder company
+can still show red on P/E if it fails Value Pick's P/E<=30 bar, even
+though P/E isn't one of Quality Compounder's own criteria. This uses only
+threshold numbers already specified in the Sprint 3 spec for the 6
+presets - no new business thresholds were invented for this fix. Columns
+with no preset-given threshold at all (ROCE, NPM, OPM, Interest Coverage,
+Asset Turnover, EPS CAGR 5yr, Market Cap) are deliberately left uncolored
+rather than guessing a bar for them.
 """
 import sys
 import os
@@ -50,6 +69,27 @@ PRESET_THRESHOLD_COLUMNS = {
         ("revenue_cagr_3yr", ">=", 10), ("free_cash_flow_cr", ">=", 0),
     ],
 }
+
+# For each column, the first (preset_name, op, threshold) seen across all 6
+# presets in PRESETS' own dict order - used to color a column in sheets
+# where it ISN'T that sheet's own defining criterion, so red has somewhere
+# to actually show up. Deliberately excludes debt_to_equity: its 4 preset
+# definitions range from <0.05 to <=2.5, and picking any single one of
+# them to apply to presets that use a different D/E bar (or none at all)
+# would contradict that preset's own already-correct D/E coloring rather
+# than add useful information.
+def _build_foreign_thresholds():
+    seen = {}
+    for preset_name, rules in PRESET_THRESHOLD_COLUMNS.items():
+        for col, op, threshold in rules:
+            if col == "debt_to_equity":
+                continue
+            if col not in seen:
+                seen[col] = (preset_name, op, threshold)
+    return seen
+
+
+FOREIGN_THRESHOLDS = _build_foreign_thresholds()
 
 DISPLAY_COLUMNS = [
     "company_id", "return_on_equity_pct", "return_on_capital_employed_pct",
@@ -113,12 +153,22 @@ def write_preset_sheet(wb, preset_name, universe_df):
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
 
             if col_name in threshold_cols:
+                # This preset's own defining criterion - always green,
+                # correctly, since every row here already passed it.
                 op, threshold = next((op, t) for c, op, t in threshold_rules if c == col_name)
                 passed = passes_threshold(value, op, threshold, column=col_name, broad_sector=row.get("broad_sector"))
-                if passed is True:
-                    cell.fill = GREEN_FILL
-                elif passed is False:
-                    cell.fill = RED_FILL
+            elif col_name in FOREIGN_THRESHOLDS:
+                # Not this preset's own criterion - color against whichever
+                # OTHER preset defines a bar for it, so red is reachable.
+                _, op, threshold = FOREIGN_THRESHOLDS[col_name]
+                passed = passes_threshold(value, op, threshold, column=col_name, broad_sector=row.get("broad_sector"))
+            else:
+                passed = None  # no preset-given threshold for this column - leave uncolored
+
+            if passed is True:
+                cell.fill = GREEN_FILL
+            elif passed is False:
+                cell.fill = RED_FILL
 
     return len(result)
 

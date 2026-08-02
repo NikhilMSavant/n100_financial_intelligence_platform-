@@ -16,6 +16,7 @@ from ratios import (
     interest_coverage_ratio,
     net_debt,
     asset_turnover,
+    book_value_per_share,
 )
 
 def test_01_net_profit_margin_normal_case():
@@ -94,3 +95,13 @@ def test_15_net_debt_can_be_negative_when_cash_rich():
 
 def test_16_asset_turnover_zero_assets_returns_none():
     assert asset_turnover(1000, 0) is None
+
+
+def test_17_book_value_per_share_normal_case():
+    # equity_capital=100 Cr, face_value=Rs 10 -> 10 Cr shares outstanding
+    # (equity_capital + reserves) = 100 + 400 = 500 Cr / 10 Cr shares = Rs 50/share
+    assert book_value_per_share(equity_capital=100, reserves=400, face_value=10) == 50.0
+
+
+def test_18_book_value_per_share_missing_face_value_returns_none():
+    assert book_value_per_share(equity_capital=100, reserves=400, face_value=None) is None

@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from ratios import (
     net_profit_margin, operating_profit_margin, return_on_equity,
     return_on_capital_employed, return_on_assets, debt_to_equity,
-    interest_coverage_ratio, net_debt, asset_turnover,
+    interest_coverage_ratio, net_debt, asset_turnover, book_value_per_share,
 )
 from cagr import compute_cagr_from_series
 from cashflow_kpis import cfo_quality_score
@@ -35,17 +35,18 @@ def fetch_company_year_data(conn):
             pl.net_profit, pl.eps, pl.dividend_payout, pl.profit_before_tax,
             bs.equity_capital, bs.reserves, bs.borrowings, bs.investments, bs.total_assets,
             cf.operating_activity, cf.investing_activity, cf.financing_activity,
-            s.broad_sector
+            s.broad_sector, c.face_value
         FROM profitandloss pl
         LEFT JOIN balancesheet bs ON bs.company_id = pl.company_id AND bs.year = pl.year
         LEFT JOIN cashflow cf ON cf.company_id = pl.company_id AND cf.year = pl.year
         LEFT JOIN sectors s ON s.company_id = pl.company_id
+        LEFT JOIN companies c ON c.company_id = pl.company_id
         ORDER BY pl.company_id, pl.year
     """
     cols = ["company_id", "year", "sales", "operating_profit", "opm_percentage", "other_income", "interest",
             "net_profit", "eps", "dividend_payout", "profit_before_tax",
             "equity_capital", "reserves", "borrowings", "investments", "total_assets",
-            "operating_activity", "investing_activity", "financing_activity", "broad_sector"]
+            "operating_activity", "investing_activity", "financing_activity", "broad_sector", "face_value"]
     rows = conn.execute(query).fetchall()
     return [dict(zip(cols, r)) for r in rows]
 
@@ -98,6 +99,7 @@ def main():
         ndebt = net_debt(r["borrowings"], r["investments"])
         at = asset_turnover(r["sales"], r["total_assets"])
         fcf = (r["operating_activity"] or 0) + (r["investing_activity"] or 0)
+        bvps = book_value_per_share(r["equity_capital"], r["reserves"], r["face_value"])
         rev_cagr_3yr = compute_cagr_from_series(sales_series.get(cid, {}), 3)
         rev_cagr = compute_cagr_from_series(sales_series.get(cid, {}), 5)
         pat_cagr = compute_cagr_from_series(pat_series.get(cid, {}), 5)
@@ -119,7 +121,7 @@ def main():
             "free_cash_flow_cr": fcf,
             "capex_cr": r["investing_activity"],
             "earnings_per_share": r["eps"],
-            "book_value_per_share": None,  # needs shares outstanding, not in current schema - left null, documented in Day 13 log
+            "book_value_per_share": bvps,
             "dividend_payout_ratio_pct": r["dividend_payout"],
             "total_debt_cr": r["borrowings"],
             "cash_from_operations_cr": r["operating_activity"],
