@@ -1,0 +1,3 @@
+table,company_id,year,reason
+profitandloss,ADANIENSOL,2014-03,"all financial fields zeroed out - not a real business event, flagged CRITICAL by validator.py DQ-06/DQ-10"
+balancesheet,ADANIENSOL,2014-03,"all financial fields zeroed out - not a real business event, flagged CRITICAL by validator.py DQ-06/DQ-10"
