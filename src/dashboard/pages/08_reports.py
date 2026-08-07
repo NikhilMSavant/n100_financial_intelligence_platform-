@@ -24,11 +24,15 @@ st.write(f"**{len(docs)} report years available**")
 
 
 def check_url(url, timeout=4):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     try:
-        r = requests.head(url, timeout=timeout, allow_redirects=True)
+        r = requests.head(url, timeout=timeout, allow_redirects=True, headers=headers)
+        if r.status_code in (403, 405):
+            # server blocks HEAD or bots -- try a lightweight GET instead
+            r = requests.get(url, timeout=timeout, allow_redirects=True, headers=headers, stream=True)
         return r.status_code < 400
     except Exception:
-        return None  # unknown (offline / blocked) -- shown as unverified, not failed
+        return None  # unknown -- shown as unverified, not failed
 
 
 for _, row in docs.iterrows():
