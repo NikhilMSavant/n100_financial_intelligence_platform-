@@ -1,133 +1,92 @@
 """
-cashflow_kpis.py
-----------------
-Day 11 deliverable: Free Cash Flow, CFO Quality Score, CapEx Intensity,
-FCF Conversion Rate, and the 8-pattern capital allocation classifier.
+cashflow_kpis.py — Sprint 2 / Day 11 (+ Sprint 5 / Day 31 distress/deleveraging flags)
 """
 
 
 def free_cash_flow(operating_activity, investing_activity):
-    """
-    FCF = operating_activity + investing_activity.
-    A negative result is allowed and meaningful (heavy investment phase,
-    e.g. building a new plant) - it is NOT an error case to guard against.
-    """
-    return (operating_activity or 0) + (investing_activity or 0)
+    if operating_activity is None or investing_activity is None:
+        return None
+    return operating_activity + investing_activity  # negative allowed
 
 
-def cfo_quality_score(cfo_values, pat_values):
-    """
-    CFO Quality Score = average(CFO / PAT) over the years provided.
-    cfo_values and pat_values must be same-length, same-order lists
-    (typically the trailing 5 years, per spec - but this function just
-    averages whatever it's given, so the caller controls the window).
-
-    Quality label:
-      > 1.0        -> "High Quality"   (cash earnings exceed paper profit)
-      0.5 to 1.0    -> "Moderate"
-      < 0.5         -> "Accrual Risk"   (profit not backed by real cash)
-
-    A year is skipped (not averaged in) if that year's PAT == 0, since
-    CFO/PAT is undefined there - not silently treated as a 0 ratio.
-    Returns {"value": None, "label": None} if there's no usable year at all.
-    """
-    ratios = []
-    for cfo, pat in zip(cfo_values, pat_values):
-        if pat == 0 or pat is None:
-            continue
-        ratios.append(cfo / pat)
-
-    if not ratios:
-        return {"value": None, "label": None}
-
-    avg_ratio = sum(ratios) / len(ratios)
-
-    if avg_ratio > 1.0:
+def cfo_quality_score(cfo_pat_ratios):
+    """cfo_pat_ratios: list of CFO/PAT values (up to 5 years), pre-computed by caller."""
+    vals = [v for v in cfo_pat_ratios if v is not None]
+    if not vals:
+        return None, None
+    avg = sum(vals) / len(vals)
+    if avg > 1.0:
         label = "High Quality"
-    elif avg_ratio >= 0.5:
+    elif avg >= 0.5:
         label = "Moderate"
     else:
         label = "Accrual Risk"
-
-    return {"value": avg_ratio, "label": label}
+    return avg, label
 
 
 def capex_intensity(investing_activity, sales):
-    """
-    CapEx Intensity % = abs(investing_activity) / sales * 100.
-    Label: <3% = Asset Light, 3-8% = Moderate, >8% = Capital Intensive.
-    Returns {"value": None, "label": None} if sales == 0.
-    """
-    if sales is None or sales == 0:
-        return {"value": None, "label": None}
-
-    value = abs(investing_activity or 0) / sales * 100
-
-    if value < 3:
+    if investing_activity is None or not sales:
+        return None, None
+    pct = abs(investing_activity) / sales * 100
+    if pct < 3:
         label = "Asset Light"
-    elif value <= 8:
+    elif pct <= 8:
         label = "Moderate"
     else:
         label = "Capital Intensive"
-
-    return {"value": value, "label": label}
+    return pct, label
 
 
 def fcf_conversion_rate(fcf, operating_profit):
-    """FCF Conversion % = FCF / operating_profit * 100. None if operating_profit == 0."""
-    if operating_profit is None or operating_profit == 0:
+    if fcf is None or not operating_profit:
         return None
-    return (fcf / operating_profit) * 100
-
-def _sign(value):
-    """Returns '+', '-', or '0' for a cash flow value."""
-    if value > 0:
-        return "+"
-    if value < 0:
-        return "-"
-    return "0"
+    return fcf / operating_profit * 100
 
 
-def classify_capital_allocation(cfo, cfi, cff, cfo_quality_value=None):
+def capital_allocation_pattern(cfo, cfi, cff, cfo_pat_ratio=None):
     """
-    Classifies a company-year into one of 8 capital allocation patterns
-    based on the signs of (CFO, CFI, CFF).
-
-    Returns {"cfo_sign": str, "cfi_sign": str, "cff_sign": str, "pattern_label": str}
-
-    Pattern table (spec):
-      (+,-,-)                     -> Reinvestor
-      (+,-,-) AND cfo_quality>1.0 -> Shareholder Returns  (more specific case
-                                      of the same signs, checked first)
-      (+,+,-)                     -> Liquidating Assets
-      (-,+,+)                     -> Distress Signal
-      (-,-,+)                     -> Growth Funded by Debt
-      (+,+,+)                     -> Cash Accumulator
-      (-,-,-)                     -> Pre-Revenue
-      (+,-,+)                     -> Mixed
+    Classifies a company-year into one of 8 capital-allocation patterns based
+    on the sign of (CFO, CFI, CFF). Returns (pattern_label, cfo_sign, cfi_sign, cff_sign).
     """
-    cfo_sign = _sign(cfo)
-    cfi_sign = _sign(cfi)
-    cff_sign = _sign(cff)
-    signs = (cfo_sign, cfi_sign, cff_sign)
+    if cfo is None or cfi is None or cff is None:
+        return None, None, None, None
 
-    if signs == ("+", "-", "-") and cfo_quality_value is not None and cfo_quality_value > 1.0:
-        label = "Shareholder Returns"
-    elif signs == ("+", "-", "-"):
-        label = "Reinvestor"
-    elif signs == ("+", "+", "-"):
+    def sign(x):
+        return "+" if x >= 0 else "-"
+
+    s_cfo, s_cfi, s_cff = sign(cfo), sign(cfi), sign(cff)
+
+    if s_cfo == "+" and s_cfi == "-" and s_cff == "-":
+        label = "Shareholder Returns" if (cfo_pat_ratio is not None and cfo_pat_ratio > 1.0) else "Reinvestor"
+    elif s_cfo == "+" and s_cfi == "+" and s_cff == "-":
         label = "Liquidating Assets"
-    elif signs == ("-", "+", "+"):
+    elif s_cfo == "-" and s_cfi == "+" and s_cff == "+":
         label = "Distress Signal"
-    elif signs == ("-", "-", "+"):
+    elif s_cfo == "-" and s_cfi == "-" and s_cff == "+":
         label = "Growth Funded by Debt"
-    elif signs == ("+", "+", "+"):
+    elif s_cfo == "+" and s_cfi == "+" and s_cff == "+":
         label = "Cash Accumulator"
-    elif signs == ("-", "-", "-"):
+    elif s_cfo == "-" and s_cfi == "-" and s_cff == "-":
         label = "Pre-Revenue"
-    elif signs == ("+", "-", "+"):
+    elif s_cfo == "+" and s_cfi == "-" and s_cff == "+":
         label = "Mixed"
     else:
-        label = "Unclassified"
+        label = "Mixed"
+    return label, s_cfo, s_cfi, s_cff
 
-    return {"cfo_sign": cfo_sign, "cfi_sign": cfi_sign, "cff_sign": cff_sign, "pattern_label": label}
+
+def distress_signal(cfo, cff):
+    if cfo is None or cff is None:
+        return False
+    return cfo < 0 and cff > 0
+
+
+def deleveraging_flag(cff, borrowings_this_year, borrowings_prior_year):
+    if cff is None or borrowings_this_year is None or borrowings_prior_year is None:
+        return False
+    return cff < 0 and borrowings_this_year < borrowings_prior_year
+
+
+if __name__ == "__main__":
+    print(capital_allocation_pattern(100, -40, -30, cfo_pat_ratio=1.2))
+    print(capital_allocation_pattern(-50, 20, 40))

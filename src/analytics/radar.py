@@ -1,183 +1,101 @@
 """
-radar.py
---------
-Day 19 deliverable: generates an 8-axis radar chart per company in a
-peer group (company's values as filled polygon, peer group average as
-dashed overlay), plus a standalone chart for companies with no peer group.
-
-8 axes (all normalized to 0-100 via the same winsorization approach as
-Day 17's composite score, for visual comparability):
-  ROE, ROCE, NPM, D/E (inverted), FCF score, PAT CAGR 5yr,
-  Revenue CAGR 5yr, Composite Score
+radar.py — Sprint 3 / Day 19
+Generates an 8-axis radar chart per company (company polygon filled, peer
+group average as dashed outline), exported as PNG to reports/radar_charts/.
+Companies with no peer group get a standalone chart vs the Nifty-100 average.
 """
 import os
-import sys
-
-sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "screener"))
-
-from engine import load_screener_universe
-from composite_score import (
-    compute_scores_for_universe, winsorize_scale, sanitize_known_bad_values,
-    KNOWN_BAD_ROE_ROCE_COMPANIES,
-)
-
-import pandas as pd
-import matplotlib.pyplot as plt
+import sqlite3
 import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-RADAR_AXES = ["ROE", "ROCE", "NPM", "D/E (inv)", "FCF score", "PAT CAGR 5yr", "Revenue CAGR 5yr", "Composite Score"]
-OUT_DIR = "reports/radar_charts"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
+OUT_DIR = os.path.join(ROOT, "reports", "radar_charts")
 
-
-def build_radar_dataframe():
-    """
-    Returns the scored universe with 8 new 0-100 columns, one per radar
-    axis, ready for plotting. Reuses Day 17's winsorization/sanitization
-    so the radar chart's normalization is consistent with the composite
-    score's - a company's Composite Score axis and its ROE axis are on
-    the exact same scale used to actually compute that composite score.
-    """
-    df = load_screener_universe()
-    df = compute_scores_for_universe(df)  # adds final_composite_score
-    df = sanitize_known_bad_values(df)  # nulls ROE/ROCE for known-bad companies
-    known_bad_mask = df["company_id"].isin(KNOWN_BAD_ROE_ROCE_COMPANIES)
-
-    df["axis_ROE"] = winsorize_scale(df["return_on_equity_pct"], exclude_from_boundaries=known_bad_mask)
-    df["axis_ROCE"] = winsorize_scale(df["return_on_capital_employed_pct"], exclude_from_boundaries=known_bad_mask)
-    df["axis_NPM"] = winsorize_scale(df["net_profit_margin_pct"])
-
-    de_raw = winsorize_scale(df["debt_to_equity"])
-    df["axis_D/E (inv)"] = de_raw.apply(lambda v: (100 - v) if pd.notna(v) else None)
-
-    df["axis_FCF score"] = df["free_cash_flow_cr"].apply(lambda v: 100.0 if pd.notna(v) and v > 0 else (0.0 if pd.notna(v) else None))
-    df["axis_PAT CAGR 5yr"] = winsorize_scale(df["pat_cagr_5yr"])
-    df["axis_Revenue CAGR 5yr"] = winsorize_scale(df["revenue_cagr_5yr"])
-    df["axis_Composite Score"] = df["final_composite_score"]
-
-    return df
+AXES = ["return_on_equity_pct", "return_on_capital_employed_pct", "net_profit_margin_pct",
+        "debt_to_equity", "free_cash_flow_cr", "pat_cagr_5yr", "revenue_cagr_5yr",
+        "composite_quality_score"]
+AXES_LABELS = ["ROE", "ROCE", "NPM", "D/E", "FCF score", "PAT CAGR 5yr", "Rev CAGR 5yr", "Composite"]
 
 
-def plot_radar_chart(company_id, company_values, peer_avg_values, peer_group_name, output_path):
-    """
-    company_values, peer_avg_values: lists of 8 floats (0-100), in the
-    same order as RADAR_AXES. NaN values are treated as 0 for plotting
-    purposes only (the chart needs a plottable number; the underlying
-    data gap is not hidden - it's just visually represented as the axis
-    minimum rather than crashing the plot).
-    """
-    company_values = [0 if pd.isna(v) else v for v in company_values]
-    peer_avg_values = [0 if pd.isna(v) else v for v in peer_avg_values]
+def _normalise(df, cols):
+    """0-100 min-max scale each axis across the full universe so radar shapes are comparable.
+    D/E is inverted (lower D/E = better = higher score)."""
+    out = df.copy()
+    for c in cols:
+        s = out[c].astype(float)
+        lo, hi = s.min(), s.max()
+        if hi == lo:
+            out[c + "_n"] = 50.0
+            continue
+        scaled = (s - lo) / (hi - lo) * 100
+        if c == "debt_to_equity":
+            scaled = 100 - scaled
+        out[c + "_n"] = scaled.fillna(scaled.median())
+    return out
 
-    n = len(RADAR_AXES)
+
+def _plot(company_row, avg_values, title, out_path):
+    n = len(AXES)
     angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
-    angles += angles[:1]  # close the loop
-    company_plot = company_values + company_values[:1]
-    peer_plot = peer_avg_values + peer_avg_values[:1]
+    angles += angles[:1]
 
-    fig, ax = plt.subplots(figsize=(7, 7), subplot_kw={"projection": "polar"})
+    company_vals = [company_row[c + "_n"] for c in AXES] + [company_row[AXES[0] + "_n"]]
+    avg_vals = list(avg_values) + [avg_values[0]]
 
-    ax.plot(angles, company_plot, linewidth=2, color="#2563eb", label=company_id)
-    ax.fill(angles, company_plot, color="#2563eb", alpha=0.25)
-
-    ax.plot(angles, peer_plot, linewidth=1.5, linestyle="--", color="#6b7280", label=f"{peer_group_name} avg")
-
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+    ax.plot(angles, company_vals, color="#1f77b4", linewidth=2)
+    ax.fill(angles, company_vals, color="#1f77b4", alpha=0.25)
+    ax.plot(angles, avg_vals, color="#888888", linewidth=1.5, linestyle="--")
     ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(RADAR_AXES, fontsize=10)
-    ax.set_ylim(0, 100)
-    ax.set_yticks([25, 50, 75, 100])
-    ax.set_yticklabels(["25", "50", "75", "100"], fontsize=8, color="gray")
-
-    ax.set_title(f"{company_id} vs {peer_group_name} Average", fontsize=13, fontweight="bold", pad=20)
-    ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.1), fontsize=9)
-
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    ax.set_xticklabels(AXES_LABELS, fontsize=9)
+    ax.set_yticklabels([])
+    ax.set_title(title, fontsize=12, pad=20)
+    ax.legend(["Company", "Peer group avg"], loc="upper right", bbox_to_anchor=(1.3, 1.1), fontsize=8)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=110)
     plt.close(fig)
 
 
-def plot_standalone_chart(company_id, company_values, nifty100_avg_values, output_path):
-    """
-    For companies with no peer group assigned. Per spec: 'generate a
-    single-metric standalone chart with Nifty 100 average as reference'
-    - rather than a full 8-axis radar (which implies peer comparison
-    that doesn't exist here), this is a simple horizontal bar comparing
-    the company's Composite Score against the full 92-company average,
-    which is the one metric that summarizes overall quality without
-    needing a peer group context.
-    """
-    company_score = company_values[RADAR_AXES.index("Composite Score")]
-    nifty_avg_score = nifty100_avg_values[RADAR_AXES.index("Composite Score")]
-
-    fig, ax = plt.subplots(figsize=(6, 2.5))
-    bars = ax.barh(["Nifty 100 Avg", company_id], [nifty_avg_score, company_score],
-                    color=["#9ca3af", "#2563eb"])
-    ax.set_xlim(0, 100)
-    ax.set_xlabel("Composite Score (0-100)")
-    ax.set_title(f"{company_id} — No Peer Group Assigned\n(Composite Score vs Nifty 100 Average)",
-                 fontsize=11, fontweight="bold")
-
-    for bar, value in zip(bars, [nifty_avg_score, company_score]):
-        ax.text(value + 1.5, bar.get_y() + bar.get_height() / 2, f"{value:.1f}",
-                va="center", fontsize=9)
-
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches="tight")
-    plt.close(fig)
-
-
-def generate_all_charts(db_path="db/nifty100.db"):
-    import sqlite3
-
+def run(limit=None):
     os.makedirs(OUT_DIR, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    fr = pd.read_sql("SELECT * FROM financial_ratios", conn)
+    idx = fr.groupby("company_id")["year"].idxmax()
+    latest = fr.loc[idx].reset_index(drop=True)
+    latest = _normalise(latest, AXES)
+    companies = pd.read_sql("SELECT company_id, company_name FROM companies", conn)
+    peer_groups = pd.read_sql("SELECT peer_group_name, company_id FROM peer_groups", conn)
+    latest = latest.merge(companies, on="company_id", how="left")
 
-    df = build_radar_dataframe()
-    axis_cols = [f"axis_{a}" for a in RADAR_AXES]
+    grouped_ids = set(peer_groups.company_id)
+    nifty_avg = [latest[c + "_n"].mean() for c in AXES]
 
-    conn = sqlite3.connect(db_path)
-    peer_groups = conn.execute("SELECT company_id, peer_group_name FROM peer_groups").fetchall()
-    conn.close()
-    peer_group_map = {cid: group for cid, group in peer_groups}
-
-    nifty_avg = [df[c].mean() for c in axis_cols]
-
-    generated = 0
-    skipped = []
-
-    for _, row in df.iterrows():
-        cid = row["company_id"]
-        company_values = [row[c] for c in axis_cols]
-        # sanitize filename: some tickers contain characters like '&' that
-        # are fine in a ticker but awkward in a filename - replace defensively
-        safe_cid = cid.replace("&", "AND").replace("/", "-")
-
-        if cid in peer_group_map:
-            group_name = peer_group_map[cid]
-            peer_members = [c for c, g in peer_group_map.items() if g == group_name]
-            peer_df = df[df["company_id"].isin(peer_members)]
-            peer_avg = [peer_df[c].mean() for c in axis_cols]
-
-            output_path = os.path.join(OUT_DIR, f"{safe_cid}_radar.png")
-            try:
-                plot_radar_chart(cid, company_values, peer_avg, group_name, output_path)
-                generated += 1
-            except Exception as e:
-                skipped.append((cid, str(e)))
+    n_written = 0
+    ids = latest["company_id"].tolist() if limit is None else latest["company_id"].tolist()[:limit]
+    for cid in ids:
+        row = latest[latest.company_id == cid].iloc[0]
+        pg = peer_groups[peer_groups.company_id == cid]
+        if len(pg):
+            group_name = pg.iloc[0]["peer_group_name"]
+            member_ids = peer_groups[peer_groups.peer_group_name == group_name]["company_id"]
+            group_df = latest[latest.company_id.isin(member_ids)]
+            avg_vals = [group_df[c + "_n"].mean() for c in AXES]
+            title = f"{row.company_name} ({cid}) vs {group_name} avg"
         else:
-            output_path = os.path.join(OUT_DIR, f"{safe_cid}_radar.png")
-            try:
-                plot_standalone_chart(cid, company_values, nifty_avg, output_path)
-                generated += 1
-            except Exception as e:
-                skipped.append((cid, str(e)))
+            avg_vals = nifty_avg
+            title = f"{row.company_name} ({cid}) vs Nifty 100 avg"
+        out_path = os.path.join(OUT_DIR, f"{cid}_radar.png")
+        _plot(row, avg_vals, title, out_path)
+        n_written += 1
 
-    return generated, skipped
+    print(f"Radar charts written: {n_written} -> {OUT_DIR}")
+    conn.close()
 
 
 if __name__ == "__main__":
-    generated, skipped = generate_all_charts()
-    print(f"Generated {generated} charts in {OUT_DIR}/")
-    if skipped:
-        print(f"Skipped {len(skipped)} companies due to errors:")
-        for cid, err in skipped:
-            print(f"  {cid}: {err}")
+    run()

@@ -1,114 +1,75 @@
 """
-valuation.py
-------------
-Day 26 deliverable: FCF yield, sector-relative P/E overvaluation flags,
-output/valuation_summary.xlsx and output/valuation_flags.csv.
+valuation.py — Sprint 4 / Day 26
+Computes FCF yield, sector-median P/E comparison, and Caution/Discount/Fair
+flags for all companies using market_cap.xlsx data (loaded into market_cap table).
 """
+import os
 import sqlite3
 import pandas as pd
 
-DB_PATH = "db/nifty100.db"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
+OUT_DIR = os.path.join(ROOT, "output")
 
 
-def compute_fcf_yield(fcf_cr, market_cap_crore):
-    """FCF Yield % = FCF / market_cap_crore * 100. None if market_cap missing/zero."""
-    if market_cap_crore is None or market_cap_crore == 0 or fcf_cr is None:
-        return None
-    return (fcf_cr / market_cap_crore) * 100
+def run():
+    conn = sqlite3.connect(DB_PATH)
+    mc = pd.read_sql("SELECT * FROM market_cap", conn)
+    idx = mc.groupby("company_id")["year"].idxmax()
+    latest_mc = mc.loc[idx].reset_index(drop=True)
+    latest_year = latest_mc["year"].max()
 
+    companies = pd.read_sql("SELECT company_id, company_name FROM companies", conn)
+    sectors = pd.read_sql("SELECT company_id, broad_sector FROM sectors", conn)
+    fr = pd.read_sql("SELECT * FROM financial_ratios", conn)
+    fr_idx = fr.groupby("company_id")["year"].idxmax()
+    latest_fr = fr.loc[fr_idx].reset_index(drop=True)
 
-def classify_valuation_flag(pe_ratio, sector_median_pe):
-    """
-    Caution if P/E > sector_median * 1.5
-    Discount if P/E < sector_median * 0.7
-    Fair otherwise.
-    Returns None if either input is missing (can't judge without both).
-    """
-    if pe_ratio is None or sector_median_pe is None or sector_median_pe == 0:
-        return None
-    if pe_ratio > sector_median_pe * 1.5:
-        return "Caution"
-    if pe_ratio < sector_median_pe * 0.7:
-        return "Discount"
-    return "Fair"
+    df = latest_mc.merge(companies, on="company_id", how="left")
+    df = df.merge(sectors, on="company_id", how="left")
+    df = df.merge(latest_fr[["company_id", "free_cash_flow_cr"]], on="company_id", how="left")
 
+    # FCF yield
+    df["fcf_yield_pct"] = df["free_cash_flow_cr"] / df["market_cap_crore"] * 100
 
-def compute_valuation_summary(db_path=DB_PATH):
-    conn = sqlite3.connect(db_path)
+    # 5yr median PE per company (from full market_cap history)
+    med_pe = mc.groupby("company_id")["pe_ratio"].median().rename("5yr_median_PE")
+    df = df.merge(med_pe, on="company_id", how="left")
 
-    # latest year's P/E, P/B, EV/EBITDA, market_cap, and FCF per company
-    latest = pd.read_sql("""
-        SELECT mc.company_id, mc.year, mc.pe_ratio, mc.pb_ratio, mc.ev_ebitda,
-               mc.market_cap_crore, fr.free_cash_flow_cr, s.broad_sector,
-               c.company_name
-        FROM market_cap mc
-        LEFT JOIN financial_ratios fr ON fr.company_id = mc.company_id AND fr.year = mc.year
-        LEFT JOIN sectors s ON s.company_id = mc.company_id
-        LEFT JOIN companies c ON c.company_id = mc.company_id
-        WHERE mc.year = (
-            SELECT MAX(year) FROM market_cap mc2
-            WHERE mc2.company_id = mc.company_id
-        )
-    """, conn)
+    # sector median PE, latest year only
+    sector_pe = df.groupby("broad_sector")["pe_ratio"].median().rename("sector_median_pe")
+    df = df.merge(sector_pe, on="broad_sector", how="left")
 
-    # 5-year median P/E per company (all available years, up to 5 most recent)
-    all_pe = pd.read_sql("SELECT company_id, year, pe_ratio FROM market_cap ORDER BY company_id, year", conn)
-    median_pe_5yr = (
-        all_pe.groupby("company_id")
-        .apply(lambda g: g.tail(5)["pe_ratio"].median(), include_groups=False)
-        .reset_index(name="median_pe_5yr")
-    )
+    df["PE_vs_sector_median_pct"] = (df["pe_ratio"] - df["sector_median_pe"]) / df["sector_median_pe"] * 100
 
+    def flag(row):
+        if pd.isna(row["pe_ratio"]) or pd.isna(row["sector_median_pe"]) or row["sector_median_pe"] == 0:
+            return "Fair"
+        if row["pe_ratio"] > row["sector_median_pe"] * 1.5:
+            return "Caution"
+        if row["pe_ratio"] < row["sector_median_pe"] * 0.7:
+            return "Discount"
+        return "Fair"
+
+    df["flag"] = df.apply(flag, axis=1)
+
+    out = df.rename(columns={
+        "broad_sector": "sector", "pe_ratio": "P/E", "pb_ratio": "P/B",
+        "ev_ebitda": "EV/EBITDA",
+    })[["company_id", "company_name", "sector", "P/E", "P/B", "EV/EBITDA",
+        "fcf_yield_pct", "5yr_median_PE", "PE_vs_sector_median_pct", "flag"]]
+    out = out.rename(columns={"fcf_yield_pct": "FCF_yield_pct"})
+
+    out.to_excel(os.path.join(OUT_DIR, "valuation_summary.xlsx"), index=False)
+    flagged = out[out["flag"].isin(["Caution", "Discount"])]
+    flagged.to_csv(os.path.join(OUT_DIR, "valuation_flags.csv"), index=False)
+
+    print(f"valuation_summary.xlsx: {len(out)} companies")
+    print(f"valuation_flags.csv: {len(flagged)} flagged "
+          f"(Caution={sum(out.flag=='Caution')}, Discount={sum(out.flag=='Discount')})")
     conn.close()
-
-    df = latest.merge(median_pe_5yr, on="company_id", how="left")
-
-    # sector median P/E, computed from the same latest-year snapshot
-    sector_median_pe = df.groupby("broad_sector")["pe_ratio"].median().rename("sector_median_pe")
-    df = df.merge(sector_median_pe, on="broad_sector", how="left")
-
-    df["fcf_yield_pct"] = df.apply(lambda r: compute_fcf_yield(r["free_cash_flow_cr"], r["market_cap_crore"]), axis=1)
-    df["pe_vs_sector_median_pct"] = df.apply(
-        lambda r: ((r["pe_ratio"] - r["sector_median_pe"]) / r["sector_median_pe"] * 100)
-        if pd.notna(r["pe_ratio"]) and pd.notna(r["sector_median_pe"]) and r["sector_median_pe"] != 0
-        else None,
-        axis=1,
-    )
-    df["flag"] = df.apply(lambda r: classify_valuation_flag(r["pe_ratio"], r["sector_median_pe"]), axis=1)
-
-    return df[[
-        "company_id", "company_name", "broad_sector", "pe_ratio", "pb_ratio",
-        "ev_ebitda", "fcf_yield_pct", "median_pe_5yr", "pe_vs_sector_median_pct", "flag",
-    ]].rename(columns={"broad_sector": "sector", "median_pe_5yr": "5yr_median_PE",
-                        "pe_vs_sector_median_pct": "PE_vs_sector_median_pct"})
-
-
-def write_valuation_table(df, db_path=DB_PATH):
-    """Writes the valuation summary into a 'valuation' table in SQLite,
-    so the dashboard's get_valuation(ticker) function (stubbed on Day 22)
-    can query it directly."""
-    conn = sqlite3.connect(db_path)
-    conn.execute("DROP TABLE IF EXISTS valuation")
-    df.to_sql("valuation", conn, index=False)
-    conn.close()
-
-
-def main():
-    df = compute_valuation_summary()
-
-    df.to_excel("output/valuation_summary.xlsx", index=False)
-    print(f"Wrote output/valuation_summary.xlsx: {len(df)} rows")
-
-    flagged = df[df["flag"].isin(["Caution", "Discount"])]
-    flagged.to_csv("output/valuation_flags.csv", index=False)
-    print(f"Wrote output/valuation_flags.csv: {len(flagged)} rows")
-
-    write_valuation_table(df)
-    print("Wrote 'valuation' table to database")
-
-    print("\nFlag distribution:")
-    print(df["flag"].value_counts(dropna=False))
+    return out
 
 
 if __name__ == "__main__":
-    main()
+    run()

@@ -1,107 +1,90 @@
-"""
-Day 8 deliverable: 8 unit tests for profitability ratios.
-Run with: python -m pytest tests/kpi/test_ratios.py -v
-"""
-import sys
-import os
+import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src", "analytics"))
+from ratios import (net_profit_margin, operating_profit_margin, opm_cross_check,
+                     return_on_equity, return_on_capital_employed, return_on_assets,
+                     debt_to_equity, high_leverage_flag, interest_coverage_ratio,
+                     icr_label, icr_warning_flag, net_debt, asset_turnover)
 
-from ratios import (
-    net_profit_margin,
-    operating_profit_margin,
-    return_on_equity,
-    return_on_capital_employed,
-    return_on_assets,
-    debt_to_equity,
-    interest_coverage_ratio,
-    net_debt,
-    asset_turnover,
-    book_value_per_share,
-)
 
-def test_01_net_profit_margin_normal_case():
+def test_npm_normal():
     assert net_profit_margin(100, 1000) == 10.0
 
 
-def test_02_net_profit_margin_zero_sales_returns_none():
+def test_npm_zero_sales_is_none():
     assert net_profit_margin(100, 0) is None
 
 
-def test_03_opm_normal_case_no_mismatch():
-    result = operating_profit_margin(200, 1000, stated_opm_percentage=20.0)
-    assert result["value"] == 20.0
-    assert result["mismatch"] is False
+def test_roe_normal():
+    assert round(return_on_equity(100, 10, 90), 2) == 100.0
 
 
-def test_04_opm_cross_check_mismatch_flagged():
-    result = operating_profit_margin(200, 1000, stated_opm_percentage=15.0)
-    assert result["mismatch"] is True
+def test_roe_negative_equity_is_none():
+    assert return_on_equity(100, -50, -60) is None
 
 
-def test_05_roe_normal_case():
-    assert return_on_equity(100, 10, 90) == 100.0
+def test_roe_zero_denom_is_none():
+    assert return_on_equity(100, 0, 0) is None
 
 
-def test_06_roe_negative_equity_returns_none():
-    assert return_on_equity(100, 10, -50) is None
+def test_opm_cross_check_within_tolerance():
+    assert opm_cross_check(12.3, 12.9) is True
 
 
-def test_07_roce_financials_sector_flag():
-    result = return_on_capital_employed(150, 10, 90, 50, broad_sector="Financials")
-    assert result["is_financials_sector"] is True
+def test_opm_cross_check_mismatch():
+    assert opm_cross_check(10.0, 15.0) is False
 
 
-def test_08_roa_zero_total_assets_returns_none():
+def test_roce_normal():
+    assert round(return_on_capital_employed(200, 10, 90, 100), 2) == 100.0
+
+
+def test_roa_zero_assets_is_none():
     assert return_on_assets(100, 0) is None
-    
-
-def test_09_de_debt_free_returns_zero_not_none():
-    result = debt_to_equity(0, 10, 90)
-    assert result["value"] == 0
-    assert result["high_leverage_flag"] is False
 
 
-def test_10_de_high_leverage_flag_triggers():
-    result = debt_to_equity(600, 10, 90)
-    assert result["value"] == 6.0
-    assert result["high_leverage_flag"] is True
+def test_de_debtfree_returns_zero_not_none():
+    assert debt_to_equity(0, 10, 90) == 0.0
 
 
-def test_11_de_high_leverage_flag_suppressed_for_financials():
-    result = debt_to_equity(600, 10, 90, broad_sector="Financials")
-    assert result["high_leverage_flag"] is False
+def test_de_normal():
+    assert debt_to_equity(200, 10, 90) == 2.0
 
 
-def test_12_icr_interest_zero_returns_none_with_debt_free_label():
-    result = interest_coverage_ratio(100, 20, 0)
-    assert result["value"] is None
-    assert result["icr_label"] == "Debt Free"
+def test_de_negative_networth_is_none():
+    assert debt_to_equity(100, -10, -20) is None
 
 
-def test_13_icr_normal_case_no_warning():
-    result = interest_coverage_ratio(100, 20, 40)
-    assert result["value"] == 3.0
-    assert result["icr_warning"] is False
+def test_high_leverage_flag_true_nonfinancial():
+    assert high_leverage_flag(6.0, "Industrials") is True
 
 
-def test_14_icr_low_coverage_triggers_warning():
-    result = interest_coverage_ratio(10, 5, 40)
-    assert result["icr_warning"] is True
+def test_high_leverage_flag_suppressed_for_financials():
+    assert high_leverage_flag(10.0, "Financials") is False
 
 
-def test_15_net_debt_can_be_negative_when_cash_rich():
-    assert net_debt(200, 500) == -300
+def test_icr_interest_zero_returns_none():
+    assert interest_coverage_ratio(100, 10, 0) is None
 
 
-def test_16_asset_turnover_zero_assets_returns_none():
+def test_icr_label_debt_free():
+    assert icr_label(None) == "Debt Free"
+
+
+def test_icr_label_normal_is_none():
+    assert icr_label(5.0) is None
+
+
+def test_icr_warning_flag_low():
+    assert icr_warning_flag(1.2) is True
+
+
+def test_icr_warning_flag_ok():
+    assert icr_warning_flag(3.0) is False
+
+
+def test_net_debt():
+    assert net_debt(500, 120) == 380
+
+
+def test_asset_turnover_zero_assets_is_none():
     assert asset_turnover(1000, 0) is None
-
-
-def test_17_book_value_per_share_normal_case():
-    # equity_capital=100 Cr, face_value=Rs 10 -> 10 Cr shares outstanding
-    # (equity_capital + reserves) = 100 + 400 = 500 Cr / 10 Cr shares = Rs 50/share
-    assert book_value_per_share(equity_capital=100, reserves=400, face_value=10) == 50.0
-
-
-def test_18_book_value_per_share_missing_face_value_returns_none():
-    assert book_value_per_share(equity_capital=100, reserves=400, face_value=None) is None

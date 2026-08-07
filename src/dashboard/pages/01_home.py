@@ -1,67 +1,50 @@
-"""
-01_home.py
-----------
-Day 23 deliverable: Home screen - 6 KPI tiles, sector breakdown donut
-chart, top-5 companies by composite score, year selector.
-"""
+"""pages/01_home.py — Sprint 4 / Day 23"""
+import os
+import sys
 import streamlit as st
 import plotly.express as px
-import sys
-import os
-import sqlite3
-import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "utils"))
-from db import get_home_summary, get_sectors, get_top5_by_composite_score
+from db import get_companies, get_ratios
 
-st.set_page_config(page_title="Home", layout="wide")
-st.title("Home")
+st.set_page_config(page_title="Home | Nifty 100 Analytics", layout="wide")
+st.title("🏠 Home")
 
-# --- Year selector (sidebar) ---
-year_options = ["Latest"] + [str(y) for y in range(2024, 2018, -1)]
-selected_year = st.sidebar.selectbox("Select year", year_options, index=0)
-year_param = None if selected_year == "Latest" else int(selected_year)
+companies = get_companies()
+ratios = get_ratios()
 
-# --- 6 KPI tiles ---
-summary = get_home_summary(year=year_param)
+years = sorted(ratios["year"].dropna().unique().astype(int).tolist())
+default_year = years[-1] if years else 2024
+year = st.sidebar.selectbox("Year", options=years, index=len(years) - 1 if years else 0)
+
+latest = ratios[ratios["year"] == year]
 
 col1, col2, col3, col4, col5, col6 = st.columns(6)
-col1.metric("Average ROE", f"{summary['avg_roe']:.1f}%" if pd.notna(summary['avg_roe']) else "N/A")
-col2.metric("Median P/E", f"{summary['median_pe']:.1f}" if pd.notna(summary['median_pe']) else "N/A")
-col3.metric("Median D/E", f"{summary['median_de']:.2f}" if pd.notna(summary['median_de']) else "N/A")
-col4.metric("Total Companies", summary["total_companies"])
-col5.metric("Median Rev CAGR 5yr", f"{summary['median_revenue_cagr_5yr']:.1f}%" if pd.notna(summary['median_revenue_cagr_5yr']) else "N/A")
-col6.metric("Debt-Free Companies", summary["debt_free_count"])
+col1.metric("Average ROE", f"{latest['return_on_equity_pct'].mean():.1f}%")
+col2.metric("Median D/E", f"{latest['debt_to_equity'].median():.2f}")
+col3.metric("Total Companies", f"{companies['company_id'].nunique()}")
+col4.metric("Median Revenue CAGR 5yr", f"{latest['revenue_cagr_5yr'].median():.1f}%")
+col5.metric("Debt-Free Companies", f"{(latest['icr_label'] == 'Debt Free').sum()}")
+col6.metric("Median Net Profit Margin", f"{latest['net_profit_margin_pct'].median():.1f}%")
 
 st.divider()
 
-# --- Sector breakdown donut chart ---
-st.subheader("Sector Breakdown")
-sectors_df = get_sectors()
-sector_counts = sectors_df["broad_sector"].value_counts().reset_index()
-sector_counts.columns = ["sector", "count"]
+c1, c2 = st.columns([1, 1])
+with c1:
+    st.subheader("Sector breakdown")
+    sector_counts = companies["broad_sector"].value_counts().reset_index()
+    sector_counts.columns = ["broad_sector", "count"]
+    fig = px.pie(sector_counts, names="broad_sector", values="count", hole=0.5)
+    st.plotly_chart(fig, use_container_width=True)
 
-fig = px.pie(sector_counts, names="sector", values="count", hole=0.5)
-fig.update_layout(height=450)
-st.plotly_chart(fig, use_container_width=True)
-
-st.divider()
-
-# --- Top 5 companies by composite quality score ---
-st.subheader("Top 5 Companies by Composite Quality Score")
-top5 = get_top5_by_composite_score()
-
-KNOWN_DATA_ISSUE_COMPANIES = {"BEL", "HAL", "INDIGO", "LT", "PNB"}
-top5_display = top5.copy()
-top5_display["company_id"] = top5_display["company_id"].apply(
-    lambda cid: f"{cid} *" if cid in KNOWN_DATA_ISSUE_COMPANIES else cid
-)
-st.dataframe(top5_display, use_container_width=True, hide_index=True)
-
-if top5["company_id"].isin(KNOWN_DATA_ISSUE_COMPANIES).any():
-    st.caption(
-        "* This company's ROE/ROCE data has a known source-data issue "
-        "(understated equity/reserves) and is excluded from those two "
-        "sub-scores; its other metrics (margins, growth, leverage, cash "
-        "quality) are unaffected and contribute normally."
+with c2:
+    st.subheader("Top 5 by composite quality score")
+    merged = latest.merge(companies[["company_id", "company_name"]], on="company_id", how="left")
+    top5 = merged.sort_values("composite_quality_score", ascending=False).head(5)
+    st.dataframe(
+        top5[["company_id", "company_name", "composite_quality_score",
+              "return_on_equity_pct", "debt_to_equity"]]
+        .rename(columns={"composite_quality_score": "Composite Score",
+                          "return_on_equity_pct": "ROE %", "debt_to_equity": "D/E"}),
+        use_container_width=True, hide_index=True,
     )

@@ -1,167 +1,124 @@
 """
-ratios.py
----------
-Day 8-9 deliverable: profitability, leverage, and efficiency ratios.
-Every function returns None where the spec calls for it (rather than
-raising or returning 0/inf), so downstream code can distinguish
-"not computable" from "computed to zero".
+ratios.py — Sprint 2 / Day 08-09
+Profitability, leverage & efficiency ratio functions. Every function is pure
+(takes plain numbers, returns a value or None) so it's trivially unit-testable.
 """
+import math
 
+
+def _safe(v):
+    if v is None:
+        return None
+    try:
+        if isinstance(v, float) and math.isnan(v):
+            return None
+    except TypeError:
+        return v
+    return v
+
+
+# ---------- Day 08: Profitability ----------
 
 def net_profit_margin(net_profit, sales):
-    """Net Profit Margin % = net_profit / sales * 100. None if sales == 0 or net_profit missing."""
-    if sales is None or sales == 0 or net_profit is None:
+    net_profit, sales = _safe(net_profit), _safe(sales)
+    if not sales or net_profit is None:
         return None
-    return (net_profit / sales) * 100
+    return net_profit / sales * 100
 
 
-def operating_profit_margin(operating_profit, sales, stated_opm_percentage=None, tolerance_pct=1.0):
-    """
-    Operating Profit Margin % = operating_profit / sales * 100.
-    If stated_opm_percentage is provided (from the profitandloss table),
-    cross-check against it and return a warning flag if they differ by
-    more than tolerance_pct.
+def operating_profit_margin(operating_profit, sales):
+    operating_profit, sales = _safe(operating_profit), _safe(sales)
+    if not sales or operating_profit is None:
+        return None
+    return operating_profit / sales * 100
 
-    Returns a dict: {"value": float | None, "mismatch": bool, "stated": float | None}
-    """
-    if sales is None or sales == 0 or operating_profit is None:
-        return {"value": None, "mismatch": False, "stated": stated_opm_percentage}
 
-    computed = (operating_profit / sales) * 100
-    mismatch = False
-    if stated_opm_percentage is not None:
-        mismatch = abs(computed - stated_opm_percentage) > tolerance_pct
-
-    return {"value": computed, "mismatch": mismatch, "stated": stated_opm_percentage}
+def opm_cross_check(computed_opm, stored_opm_pct, tolerance=1.0):
+    """Returns True if computed and stored OPM agree within `tolerance` pp."""
+    if computed_opm is None or stored_opm_pct is None:
+        return None
+    return abs(computed_opm - stored_opm_pct) <= tolerance
 
 
 def return_on_equity(net_profit, equity_capital, reserves):
-    """
-    ROE % = net_profit / (equity_capital + reserves) * 100.
-    Returns None if equity + reserves <= 0 (negative or zero net worth
-    makes the ratio meaningless/misleading, not just undefined) or if
-    net_profit is missing.
-    """
-    if net_profit is None:
+    net_profit, equity_capital, reserves = _safe(net_profit), _safe(equity_capital), _safe(reserves)
+    if equity_capital is None or reserves is None or net_profit is None:
         return None
-    net_worth = (equity_capital or 0) + (reserves or 0)
-    if net_worth <= 0:
+    denom = equity_capital + reserves
+    if denom <= 0:
         return None
-    return (net_profit / net_worth) * 100
+    return net_profit / denom * 100
 
 
-def return_on_capital_employed(ebit, equity_capital, reserves, borrowings, broad_sector=None):
-    """
-    ROCE % = EBIT / (equity_capital + reserves + borrowings) * 100.
-    Returns None if capital employed <= 0 or ebit is missing.
-
-    For companies in the 'Financials' broad_sector (banks, NBFCs, insurance),
-    absolute ROCE thresholds are misleading because leverage is structurally
-    part of their business model. This function still computes the raw
-    number either way, but flags `is_financials_sector=True` so the caller
-    (Day 12/13 logic) knows to apply a sector-relative benchmark instead of
-    an absolute cutoff, rather than skipping the calculation entirely.
-    """
-    capital_employed = (equity_capital or 0) + (reserves or 0) + (borrowings or 0)
-    if capital_employed <= 0 or ebit is None:
-        return {"value": None, "is_financials_sector": broad_sector == "Financials"}
-
-    value = (ebit / capital_employed) * 100
-    return {"value": value, "is_financials_sector": broad_sector == "Financials"}
+def return_on_capital_employed(ebit, equity_capital, reserves, borrowings):
+    ebit, equity_capital, reserves, borrowings = (_safe(x) for x in (ebit, equity_capital, reserves, borrowings))
+    if None in (ebit, equity_capital, reserves, borrowings):
+        return None
+    denom = equity_capital + reserves + borrowings
+    if denom <= 0:
+        return None
+    return ebit / denom * 100
 
 
 def return_on_assets(net_profit, total_assets):
-    """ROA % = net_profit / total_assets * 100. Returns None if total_assets == 0 or net_profit missing."""
-    if total_assets is None or total_assets == 0 or net_profit is None:
+    net_profit, total_assets = _safe(net_profit), _safe(total_assets)
+    if not total_assets or net_profit is None:
         return None
-    return (net_profit / total_assets) * 100
+    return net_profit / total_assets * 100
 
 
-def debt_to_equity(borrowings, equity_capital, reserves, broad_sector=None, threshold=5.0):
-    """
-    D/E = borrowings / (equity_capital + reserves).
-    Returns 0 (not None) if borrowings == 0 - a debt-free company has a
-    genuinely zero ratio, not an undefined one.
+# ---------- Day 09: Leverage & Efficiency ----------
 
-    high_leverage_flag is True if D/E > threshold AND the company is NOT
-    in the Financials sector (banks/NBFCs are structurally high-leverage
-    by business model, so the flag is suppressed for them - see Day 13).
-    """
-    borrowings = borrowings or 0
-    net_worth = (equity_capital or 0) + (reserves or 0)
-
-    if borrowings == 0:
-        return {"value": 0, "high_leverage_flag": False}
-
-    if net_worth <= 0:
-        return {"value": None, "high_leverage_flag": False}
-
-    value = borrowings / net_worth
-    is_financials = broad_sector == "Financials"
-    high_leverage_flag = (value > threshold) and not is_financials
-
-    return {"value": value, "high_leverage_flag": high_leverage_flag}
+def debt_to_equity(borrowings, equity_capital, reserves):
+    borrowings, equity_capital, reserves = _safe(borrowings), _safe(equity_capital), _safe(reserves)
+    if not borrowings:
+        return 0.0
+    denom = (equity_capital or 0) + (reserves or 0)
+    if denom <= 0:
+        return None
+    return borrowings / denom
 
 
-def interest_coverage_ratio(operating_profit, other_income, interest, risk_threshold=1.5):
-    """
-    ICR = (operating_profit + other_income) / interest.
-    Returns None with icr_label='Debt Free' if interest == 0 - a company
-    with no interest expense isn't "infinitely good", it's just not
-    carrying debt, so the numeric ratio is meaningless here.
+def high_leverage_flag(de_ratio, broad_sector, threshold=5.0):
+    if de_ratio is None:
+        return False
+    if broad_sector == "Financials":
+        return False
+    return de_ratio > threshold
 
-    icr_warning is True if ICR < risk_threshold (at risk of not covering
-    interest payments).
-    """
-    if interest is None or interest == 0:
-        return {"value": None, "icr_label": "Debt Free", "icr_warning": False}
 
-    value = ((operating_profit or 0) + (other_income or 0)) / interest
-    icr_warning = value < risk_threshold
+def interest_coverage_ratio(operating_profit, other_income, interest):
+    operating_profit, other_income, interest = _safe(operating_profit), _safe(other_income), _safe(interest)
+    if not interest:
+        return None
+    return ((operating_profit or 0) + (other_income or 0)) / interest
 
-    return {"value": value, "icr_label": None, "icr_warning": icr_warning}
+
+def icr_label(icr):
+    return "Debt Free" if icr is None else None
+
+
+def icr_warning_flag(icr, threshold=1.5):
+    if icr is None:
+        return False
+    return icr < threshold
 
 
 def net_debt(borrowings, investments):
-    """
-    Net Debt = borrowings - investments (investments used as a liquid-asset
-    proxy, per spec). Can be negative - that just means liquid investments
-    exceed borrowings, i.e. the company is net cash-rich, not "an error".
-    """
-    return (borrowings or 0) - (investments or 0)
+    borrowings, investments = _safe(borrowings), _safe(investments)
+    if borrowings is None:
+        return None
+    return borrowings - (investments or 0)
 
 
 def asset_turnover(sales, total_assets):
-    """Asset Turnover = sales / total_assets. Returns None if total_assets == 0."""
-    if total_assets is None or total_assets == 0 or sales is None:
+    sales, total_assets = _safe(sales), _safe(total_assets)
+    if not total_assets or sales is None:
         return None
     return sales / total_assets
 
 
-def book_value_per_share(equity_capital, reserves, face_value):
-    """
-    Book Value per Share = (equity_capital + reserves) / shares_outstanding,
-    where shares_outstanding = equity_capital / face_value (equity_capital
-    and face_value must be in the same currency unit - Rs Crore and Rs
-    respectively here, which cancels out to shares in Crore; the Rs Cr
-    units on the numerator then cancel too, leaving a plain Rs-per-share
-    figure).
-
-    Added post-Sprint-4 full re-verification: this was previously left
-    permanently None with a comment claiming shares outstanding "isn't in
-    the current schema" - that turned out to be wrong. companies.face_value
-    (Rs per share) combined with balancesheet.equity_capital (Rs Cr) is
-    enough to derive shares outstanding without needing a separate column.
-    Verified against companies.book_value (a source reference figure) for
-    3 companies - within the same small version-difference range already
-    seen for ROE/ROCE in Day 13's edge-case log, not a formula error.
-
-    Returns None if face_value or equity_capital is missing/zero (can't
-    derive a share count).
-    """
-    if not face_value or not equity_capital:
-        return None
-    shares_outstanding = equity_capital / face_value
-    if shares_outstanding == 0:
-        return None
-    return (equity_capital + (reserves or 0)) / shares_outstanding
+if __name__ == "__main__":
+    print("net_profit_margin(100,1000) =", net_profit_margin(100, 1000))
+    print("debt_to_equity(0, 10, 90) =", debt_to_equity(0, 10, 90))
+    print("interest_coverage_ratio(100,10,0) =", interest_coverage_ratio(100, 10, 0), icr_label(None))

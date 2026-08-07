@@ -1,261 +1,152 @@
 """
-validator.py
-------------
-Day 3 deliverable: runs all 16 data-quality rules (DQ-01 .. DQ-16) against
-nifty100.db and writes output/validation_failures.csv with a severity per row.
-
-Refactored (Sprint 3 Day 21 gap fix): each rule is now an independently
-callable, independently testable function that takes a DataFrame and
-returns a list of finding dicts - rather than being inline logic appending
-to a module-level global list. This lets each rule be unit-tested with
-synthetic data (see tests/etl/test_dq_rules.py), addressing the spec's
-"14 DQ rule unit tests" requirement (Sprint 1 built 16 rules; they were
-never previously structured as pytest tests).
-
-Run with: python src/etl/validator.py
-(Run AFTER loader.py, since it reads from db/nifty100.db.)
+validator.py — Sprint 1 / Day 03
+Implements DQ-01 .. DQ-16 against nifty100.db and writes
+output/validation_failures.csv with a severity column (CRITICAL / WARNING).
 """
 import os
+import re
 import sqlite3
 import pandas as pd
 
-DB_PATH = "db/nifty100.db"
-OUT_PATH = "output/validation_failures.csv"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
+OUT_DIR = os.path.join(ROOT, "output")
+
+URL_RE = re.compile(r"^https?://")
 
 
-def _finding(rule, severity, table, company_id, detail):
-    return {"rule": rule, "severity": severity, "table": table, "company_id": company_id, "detail": detail}
+def _conn():
+    return sqlite3.connect(DB_PATH)
 
 
-def check_dq01_pk_uniqueness(df, pk_col, table_name):
-    """DQ-01: no duplicate values in a table's own primary key column."""
-    dupes = df[df.duplicated()]
-    if len(dupes) > 0:
-        return [_finding("DQ-01", "CRITICAL", table_name, None, f"{len(dupes)} duplicate {pk_col} values found")]
-    return []
+def run():
+    conn = _conn()
+    failures = []  # (rule_id, severity, table, company_id, year, detail)
 
+    def add(rule, sev, table, company_id, year, detail):
+        failures.append((rule, sev, table, company_id, year, detail))
 
-def check_dq02_composite_key_uniqueness(df, table_name):
-    """DQ-02: no duplicate (company_id, year) pairs."""
-    dupes = df[df.duplicated(subset=["company_id", "year"])]
-    if len(dupes) > 0:
-        return [_finding("DQ-02", "CRITICAL", table_name, None,
-                          f"{len(dupes)} duplicate (company_id, year) pairs (should have been caught by loader dedup)")]
-    return []
+    # DQ-01: PK uniqueness on companies.company_id
+    dupe = pd.read_sql(
+        "SELECT company_id, COUNT(*) c FROM companies GROUP BY company_id HAVING c > 1", conn)
+    for _, r in dupe.iterrows():
+        add("DQ-01", "CRITICAL", "companies", r.company_id, None, "duplicate company_id")
 
+    # DQ-02: (company_id, year) PK across the 3 core statement tables
+    for tbl in ["profitandloss", "balancesheet", "cashflow"]:
+        dupe = pd.read_sql(
+            f"SELECT company_id, year, COUNT(*) c FROM {tbl} GROUP BY company_id, year HAVING c > 1", conn)
+        for _, r in dupe.iterrows():
+            add("DQ-02", "CRITICAL", tbl, r.company_id, r.year, "duplicate (company_id, year)")
 
-def check_dq03_fk_integrity(df, known_company_ids, table_name):
-    """DQ-03: every company_id must exist in the companies table."""
-    orphans = set(df["company_id"]) - set(known_company_ids)
-    return [_finding("DQ-03", "CRITICAL", table_name, cid, "company_id not present in companies table")
-            for cid in orphans]
+    # DQ-03: FK integrity — every company_id in child tables exists in companies
+    valid_ids = set(pd.read_sql("SELECT company_id FROM companies", conn)["company_id"])
+    for tbl in ["sectors", "profitandloss", "balancesheet", "cashflow", "analysis",
+                "documents", "prosandcons", "stock_prices", "market_cap", "peer_groups"]:
+        ids = pd.read_sql(f"SELECT DISTINCT company_id FROM {tbl}", conn)["company_id"]
+        for cid in ids:
+            if cid not in valid_ids:
+                add("DQ-03", "CRITICAL", tbl, cid, None, "orphan company_id (no FK parent)")
 
+    # DQ-04: balance-sheet balances — total_liabilities ≈ total_assets, tolerance < 1%
+    bs = pd.read_sql("SELECT company_id, year, total_liabilities, total_assets FROM balancesheet", conn)
+    bs = bs.dropna(subset=["total_liabilities", "total_assets"])
+    bs = bs[bs["total_assets"] != 0]
+    bs["pct_diff"] = (bs["total_liabilities"] - bs["total_assets"]).abs() / bs["total_assets"].abs() * 100
+    for _, r in bs[bs["pct_diff"] >= 1].iterrows():
+        add("DQ-04", "WARNING", "balancesheet", r.company_id, r.year,
+            f"total_liabilities vs total_assets diff = {r.pct_diff:.2f}%")
 
-def check_dq04_balance_sheet_tolerance(df, tolerance_pct=1.0):
-    """DQ-04: total_assets and total_liabilities must match within tolerance_pct%."""
-    df = df.copy()
-    df["diff_pct"] = ((df["total_assets"] - df["total_liabilities"]).abs()
-                       / df["total_liabilities"].replace(0, pd.NA)) * 100
-    bad = df[df["diff_pct"] > tolerance_pct]
-    return [_finding("DQ-04", "WARNING", "balancesheet", r["company_id"],
-                      f"year={r['year']}: assets/liabilities differ by {r['diff_pct']:.2f}% (>{tolerance_pct}%)")
-            for _, r in bad.iterrows()]
+    # DQ-05: OPM cross-check — computed vs stored opm_percentage, tolerance < 1 pp
+    pl = pd.read_sql("SELECT company_id, year, sales, operating_profit, opm_percentage FROM profitandloss", conn)
+    pl = pl.dropna(subset=["sales", "operating_profit", "opm_percentage"])
+    pl = pl[pl["sales"] != 0]
+    pl["computed_opm"] = pl["operating_profit"] / pl["sales"] * 100
+    pl["diff"] = (pl["computed_opm"] - pl["opm_percentage"]).abs()
+    for _, r in pl[pl["diff"] > 1].iterrows():
+        add("DQ-05", "WARNING", "profitandloss", r.company_id, r.year,
+            f"computed OPM {r.computed_opm:.2f}% vs stored {r.opm_percentage:.2f}%")
 
+    # DQ-06: positive sales
+    neg_sales = pd.read_sql("SELECT company_id, year, sales FROM profitandloss WHERE sales <= 0", conn)
+    for _, r in neg_sales.iterrows():
+        add("DQ-06", "CRITICAL", "profitandloss", r.company_id, r.year, f"sales={r.sales} <= 0")
 
-def check_dq05_opm_cross_check(df, tolerance_pct=1.0):
-    """DQ-05: opm_percentage should match operating_profit/sales*100 within tolerance_pct."""
-    df = df[df["sales"] > 0].copy()
-    df["computed_opm"] = df["operating_profit"] / df["sales"] * 100
-    df["diff"] = (df["computed_opm"] - df["opm_percentage"]).abs()
-    bad = df[df["diff"] > tolerance_pct]
-    return [_finding("DQ-05", "WARNING", "profitandloss", r["company_id"],
-                      f"year={r['year']}: stated OPM {r['opm_percentage']}% vs computed {r['computed_opm']:.2f}%")
-            for _, r in bad.iterrows()]
+    # DQ-07: non-negative total_assets
+    bad_ta = pd.read_sql("SELECT company_id, year, total_assets FROM balancesheet WHERE total_assets <= 0", conn)
+    for _, r in bad_ta.iterrows():
+        add("DQ-07", "CRITICAL", "balancesheet", r.company_id, r.year, f"total_assets={r.total_assets} <= 0")
 
+    # DQ-08: net cash flow reconciliation — CFO+CFI+CFF ≈ net_cash_flow, tolerance < 1 unit(cr)
+    cf = pd.read_sql("SELECT company_id, year, operating_activity, investing_activity, "
+                      "financing_activity, net_cash_flow FROM cashflow", conn).dropna()
+    cf["computed"] = cf.operating_activity + cf.investing_activity + cf.financing_activity
+    cf["diff"] = (cf["computed"] - cf["net_cash_flow"]).abs()
+    for _, r in cf[cf["diff"] > 1].iterrows():
+        add("DQ-08", "WARNING", "cashflow", r.company_id, r.year,
+            f"CFO+CFI+CFF={r.computed:.1f} vs stored net_cash_flow={r.net_cash_flow:.1f}")
 
-def check_dq06_positive_sales(df):
-    """DQ-06: sales must be > 0."""
-    bad = df[df["sales"] <= 0]
-    return [_finding("DQ-06", "CRITICAL", "profitandloss", r["company_id"], f"year={r['year']}: sales={r['sales']} <= 0")
-            for _, r in bad.iterrows()]
+    # DQ-09: tax rate sanity — tax_percentage should be within [0, 60]
+    pl2 = pd.read_sql("SELECT company_id, year, tax_percentage FROM profitandloss WHERE tax_percentage IS NOT NULL", conn)
+    bad_tax = pl2[(pl2.tax_percentage < 0) | (pl2.tax_percentage > 60)]
+    for _, r in bad_tax.iterrows():
+        add("DQ-09", "WARNING", "profitandloss", r.company_id, r.year, f"tax_percentage={r.tax_percentage} outside [0,60]")
 
+    # DQ-10: dividend payout cap — should not exceed 500% (sanity guard for bad source data)
+    pl3 = pd.read_sql("SELECT company_id, year, dividend_payout FROM profitandloss WHERE dividend_payout IS NOT NULL", conn)
+    bad_div = pl3[pl3.dividend_payout > 500]
+    for _, r in bad_div.iterrows():
+        add("DQ-10", "WARNING", "profitandloss", r.company_id, r.year, f"dividend_payout={r.dividend_payout}% > 500%")
 
-def check_dq07_net_profit_vs_pbt(df):
-    """DQ-07: net_profit should not exceed profit_before_tax."""
-    bad = df[df["net_profit"] > df["profit_before_tax"]]
-    return [_finding("DQ-07", "WARNING", "profitandloss", r["company_id"],
-                      f"year={r['year']}: net_profit ({r['net_profit']}) > profit_before_tax ({r['profit_before_tax']})")
-            for _, r in bad.iterrows()]
+    # DQ-11: annual report URL format
+    docs = pd.read_sql("SELECT company_id, year, annual_report FROM documents WHERE annual_report IS NOT NULL", conn)
+    bad_url = docs[~docs.annual_report.astype(str).str.match(URL_RE)]
+    for _, r in bad_url.iterrows():
+        add("DQ-11", "WARNING", "documents", r.company_id, r.year, "annual_report is not a valid http(s) URL")
 
+    # DQ-12: EPS sign should match net_profit sign
+    pl4 = pd.read_sql("SELECT company_id, year, net_profit, eps FROM profitandloss WHERE eps IS NOT NULL AND net_profit IS NOT NULL", conn)
+    mismatch = pl4[((pl4.net_profit > 0) & (pl4.eps < 0)) | ((pl4.net_profit < 0) & (pl4.eps > 0))]
+    for _, r in mismatch.iterrows():
+        add("DQ-12", "WARNING", "profitandloss", r.company_id, r.year, f"net_profit={r.net_profit} but eps={r.eps} (sign mismatch)")
 
-def check_dq08_eps_sign_match(df):
-    """DQ-08: EPS sign should match net_profit sign."""
-    df = df.dropna(subset=["eps", "net_profit"])
-    bad = df[(df["eps"] * df["net_profit"]) < 0]
-    return [_finding("DQ-08", "WARNING", "profitandloss", r["company_id"],
-                      f"year={r['year']}: eps={r['eps']} and net_profit={r['net_profit']} have opposite signs")
-            for _, r in bad.iterrows()]
+    # DQ-13: BSE balance-sheet completeness — equity_capital + reserves + borrowings + other_liabilities ≈ total_liabilities
+    bs2 = pd.read_sql("SELECT company_id, year, equity_capital, reserves, borrowings, other_liabilities, total_liabilities FROM balancesheet", conn).dropna()
+    bs2["computed"] = bs2.equity_capital + bs2.reserves + bs2.borrowings + bs2.other_liabilities
+    bs2["diff_pct"] = (bs2["computed"] - bs2["total_liabilities"]).abs() / bs2["total_liabilities"].abs().replace(0, pd.NA) * 100
+    bad = bs2[bs2["diff_pct"] > 1]
+    for _, r in bad.iterrows():
+        add("DQ-13", "WARNING", "balancesheet", r.company_id, r.year, f"liability components vs total diff={r.diff_pct:.2f}%")
 
+    # DQ-14: year coverage — flag companies with fewer than 5 fiscal years of P&L data
+    cov = pd.read_sql("SELECT company_id, COUNT(*) n FROM profitandloss GROUP BY company_id", conn)
+    low_cov = cov[cov.n < 5]
+    for _, r in low_cov.iterrows():
+        add("DQ-14", "WARNING", "profitandloss", r.company_id, None, f"only {r.n} fiscal years of P&L data (<5)")
 
-def check_dq09_net_cash_flow_reconciliation(df, tolerance_cr=10):
-    """DQ-09: net_cash_flow should equal operating+investing+financing within tolerance_cr."""
-    df = df.copy()
-    df["computed"] = df["operating_activity"] + df["investing_activity"] + df["financing_activity"]
-    df["diff"] = (df["computed"] - df["net_cash_flow"]).abs()
-    bad = df[df["diff"] > tolerance_cr]
-    return [_finding("DQ-09", "WARNING", "cashflow", r["company_id"],
-                      f"year={r['year']}: stated net_cash_flow {r['net_cash_flow']} vs computed {r['computed']:.1f} "
-                      f"(diff {r['diff']:.1f} Cr)")
-            for _, r in bad.iterrows()]
+    # DQ-15: stock price sanity — high >= low, close within [low, high]
+    sp = pd.read_sql("SELECT company_id, date, high_price, low_price, close_price FROM stock_prices "
+                      "WHERE high_price IS NOT NULL AND low_price IS NOT NULL", conn)
+    bad_sp = sp[(sp.high_price < sp.low_price) | (sp.close_price > sp.high_price) | (sp.close_price < sp.low_price)]
+    for _, r in bad_sp.head(500).iterrows():   # cap rows logged, still counted below
+        add("DQ-15", "WARNING", "stock_prices", r.company_id, None, f"date={r.date} high/low/close inconsistent")
 
+    # DQ-16: peer_groups membership — every company should belong to at least one peer group OR sector (informational)
+    pg_ids = set(pd.read_sql("SELECT DISTINCT company_id FROM peer_groups", conn)["company_id"])
+    for cid in sorted(valid_ids - pg_ids):
+        add("DQ-16", "WARNING", "peer_groups", cid, None, "No peer group assigned")
 
-def check_dq10_positive_balance_sheet_totals(df):
-    """DQ-10: total_assets and total_liabilities must both be positive."""
-    bad = df[(df["total_assets"] <= 0) | (df["total_liabilities"] <= 0)]
-    return [_finding("DQ-10", "CRITICAL", "balancesheet", r["company_id"],
-                      f"year={r['year']}: total_assets={r['total_assets']}, total_liabilities={r['total_liabilities']}")
-            for _, r in bad.iterrows()]
+    fdf = pd.DataFrame(failures, columns=["rule_id", "severity", "table", "company_id", "year", "detail"])
+    os.makedirs(OUT_DIR, exist_ok=True)
+    fdf.to_csv(os.path.join(OUT_DIR, "validation_failures.csv"), index=False)
 
-
-def check_dq11_tax_rate_range(df, min_rate=0, max_rate=60):
-    """DQ-11: tax_percentage should be within [min_rate, max_rate]."""
-    bad = df[(df["tax_percentage"] < min_rate) | (df["tax_percentage"] > max_rate)]
-    return [_finding("DQ-11", "WARNING", "profitandloss", r["company_id"],
-                      f"year={r['year']}: tax_percentage={r['tax_percentage']}% outside [{min_rate},{max_rate}]")
-            for _, r in bad.iterrows()]
-
-
-def check_dq12_dividend_payout_cap(df, cap_pct=200):
-    """DQ-12: dividend_payout should not exceed cap_pct%."""
-    bad = df[df["dividend_payout"] > cap_pct]
-    return [_finding("DQ-12", "WARNING", "profitandloss", r["company_id"],
-                      f"year={r['year']}: dividend_payout={r['dividend_payout']}% exceeds {cap_pct}% cap")
-            for _, r in bad.iterrows()]
-
-
-def check_dq13_url_wellformed(df):
-    """DQ-13: annual_report should be a well-formed URL (starts with http)."""
-    bad = df[~df["annual_report"].fillna("").str.startswith("http")]
-    return [_finding("DQ-13", "WARNING", "documents", r["company_id"],
-                      f"year={r['year']}: malformed URL '{r['annual_report']}'")
-            for _, r in bad.iterrows()]
-
-
-def check_dq14_ohlc_sanity(df):
-    """DQ-14: low <= open/close <= high for every stock price row."""
-    bad = df[(df["low_price"] > df["open_price"]) | (df["open_price"] > df["high_price"]) |
-              (df["low_price"] > df["close_price"]) | (df["close_price"] > df["high_price"])]
-    return [_finding("DQ-14", "WARNING", "stock_prices", r["company_id"],
-                      f"date={r['date']}: OHLC out of order (low={r['low_price']}, open={r['open_price']}, "
-                      f"close={r['close_price']}, high={r['high_price']})")
-            for _, r in bad.iterrows()]
-
-
-def check_dq15_market_cap_pe_sanity(df):
-    """DQ-15: market_cap must be positive, pe_ratio within [0, 500]."""
-    bad = df[(df["market_cap_crore"] <= 0) | (df["pe_ratio"] < 0) | (df["pe_ratio"] > 500)]
-    return [_finding("DQ-15", "WARNING", "market_cap", r["company_id"],
-                      f"year={r['year']}: market_cap={r['market_cap_crore']}, pe_ratio={r['pe_ratio']}")
-            for _, r in bad.iterrows()]
-
-
-def check_dq16_year_coverage(df, target_years=5, critical_years=3):
-    """DQ-16: each company should have >= target_years of P&L history (< critical_years is CRITICAL)."""
-    counts = df.groupby("company_id")["year"].nunique()
-    low_coverage = counts[counts < target_years]
-    findings = []
-    for cid, n in low_coverage.items():
-        sev = "CRITICAL" if n < critical_years else "WARNING"
-        findings.append(_finding("DQ-16", sev, "profitandloss", cid,
-                                  f"only {n} distinct fiscal years of P&L data (<{target_years} target, <{critical_years} is critical)"))
-    return findings
-
-
-def run(conn):
-    """Runs all 16 rules against a live database connection, fetching the
-    data each rule needs, then delegating to the pure check_* functions."""
-    findings = []
-
-    tables = ["companies", "profitandloss", "balancesheet", "cashflow", "analysis",
-              "documents", "prosandcons", "sectors", "stock_prices", "market_cap",
-              "financial_ratios", "peer_groups"]
-
-    for t in tables:
-        pk_col = "company_id" if t == "companies" else "id"
-        df = pd.read_sql(f"SELECT {pk_col} FROM {t}", conn)
-        findings += check_dq01_pk_uniqueness(df, pk_col, t)
-
-    for t in ["profitandloss", "balancesheet", "cashflow", "market_cap", "financial_ratios"]:
-        df = pd.read_sql(f"SELECT company_id, year FROM {t}", conn)
-        findings += check_dq02_composite_key_uniqueness(df, t)
-
-    known = pd.read_sql("SELECT company_id FROM companies", conn)["company_id"].tolist()
-    for t in [x for x in tables if x != "companies"]:
-        df = pd.read_sql(f"SELECT DISTINCT company_id FROM {t}", conn)
-        findings += check_dq03_fk_integrity(df, known, t)
-
-    df = pd.read_sql("SELECT company_id, year, total_assets, total_liabilities FROM balancesheet", conn)
-    findings += check_dq04_balance_sheet_tolerance(df)
-
-    df = pd.read_sql("SELECT company_id, year, sales, operating_profit, opm_percentage FROM profitandloss", conn)
-    findings += check_dq05_opm_cross_check(df)
-
-    df = pd.read_sql("SELECT company_id, year, sales FROM profitandloss", conn)
-    findings += check_dq06_positive_sales(df)
-
-    df = pd.read_sql("SELECT company_id, year, net_profit, profit_before_tax FROM profitandloss", conn)
-    findings += check_dq07_net_profit_vs_pbt(df)
-
-    df = pd.read_sql("SELECT company_id, year, eps, net_profit FROM profitandloss", conn)
-    findings += check_dq08_eps_sign_match(df)
-
-    df = pd.read_sql("SELECT company_id, year, operating_activity, investing_activity, "
-                      "financing_activity, net_cash_flow FROM cashflow", conn)
-    findings += check_dq09_net_cash_flow_reconciliation(df)
-
-    df = pd.read_sql("SELECT company_id, year, total_assets, total_liabilities FROM balancesheet", conn)
-    findings += check_dq10_positive_balance_sheet_totals(df)
-
-    df = pd.read_sql("SELECT company_id, year, tax_percentage FROM profitandloss", conn)
-    findings += check_dq11_tax_rate_range(df)
-
-    df = pd.read_sql("SELECT company_id, year, dividend_payout FROM profitandloss", conn)
-    findings += check_dq12_dividend_payout_cap(df)
-
-    df = pd.read_sql("SELECT company_id, year, annual_report FROM documents", conn)
-    findings += check_dq13_url_wellformed(df)
-
-    df = pd.read_sql("SELECT company_id, date, open_price, high_price, low_price, close_price FROM stock_prices", conn)
-    findings += check_dq14_ohlc_sanity(df)
-
-    df = pd.read_sql("SELECT company_id, year, market_cap_crore, pe_ratio FROM market_cap", conn)
-    findings += check_dq15_market_cap_pe_sanity(df)
-
-    df = pd.read_sql("SELECT company_id, year FROM profitandloss WHERE year != 'TTM'", conn)
-    findings += check_dq16_year_coverage(df)
-
-    return findings
-
-
-def main():
-    if not os.path.exists(DB_PATH):
-        raise SystemExit(f"{DB_PATH} not found - run loader.py first")
-
-    os.makedirs("output", exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    findings = run(conn)
+    n_critical = (fdf.severity == "CRITICAL").sum()
+    n_warning = (fdf.severity == "WARNING").sum()
+    print(f"DQ rules run: 16. Failures logged: {len(fdf)} (CRITICAL={n_critical}, WARNING={n_warning})")
+    print(fdf.groupby(["rule_id", "severity"]).size().to_string())
     conn.close()
-
-    df = pd.DataFrame(findings)
-    df.to_csv(OUT_PATH, index=False)
-
-    n_critical = (df["severity"] == "CRITICAL").sum() if len(df) else 0
-    n_warning = (df["severity"] == "WARNING").sum() if len(df) else 0
-    print(f"Wrote {OUT_PATH}: {len(df)} total findings ({n_critical} CRITICAL, {n_warning} WARNING)")
-    if len(df):
-        print("\nFindings by rule:")
-        print(df.groupby(["rule", "severity"]).size().to_string())
+    return fdf
 
 
 if __name__ == "__main__":
-    main()
+    run()

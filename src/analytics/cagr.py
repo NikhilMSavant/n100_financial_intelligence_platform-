@@ -1,86 +1,70 @@
 """
-cagr.py
--------
-Day 10 deliverable: CAGR engine with all 6 edge-case handlers.
+cagr.py — Sprint 2 / Day 10
+CAGR engine. Every call returns (value_or_None, flag_or_None).
 
-CAGR = ((end/start)^(1/n) - 1) * 100
-
-The formula only makes clean mathematical sense when start and end are
-both positive - taking a root of a negative number, or dividing by zero,
-either breaks math or produces a number that LOOKS valid but means
-something misleading (e.g. a companyy going from a small loss to a big
-loss can produce a deceptively "reasonable-looking" positive CAGR if you
-don't guard against negative bases). So each broken case gets its own
-named flag instead of a silently wrong number.
+Flags:
+  DECLINE_TO_LOSS  start > 0, end < 0
+  TURNAROUND       start < 0, end > 0
+  BOTH_NEGATIVE    start < 0, end < 0
+  ZERO_BASE        start == 0
+  INSUFFICIENT     fewer than n years of data supplied
 """
+import math
 
-def compute_cagr(start_value, end_value, n_years):
+
+def cagr(start, end, n_years):
     """
-    Returns a dict: {"value": float | None, "flag": str | None}
-
-    flag is None only for the normal, cleanly-computable case.
+    start/end: the metric value at the beginning / end of the window.
+    n_years: length of the window in years (denominator of the CAGR exponent).
+    Returns (value, flag).
     """
-    if n_years is None or n_years <= 0:
-        return {"value": None, "flag": "INSUFFICIENT"}
+    if start is None or end is None or n_years is None:
+        return None, "INSUFFICIENT"
+    if n_years <= 0:
+        return None, "INSUFFICIENT"
 
-    # Missing data point at either end of the window - can't compute a
-    # growth rate without both ends, and it's a data gap, not a sign-based
-    # edge case, so it gets its own distinct flag rather than being folded
-    # into ZERO_BASE or BOTH_NEGATIVE.
-    if start_value is None or end_value is None:
-        return {"value": None, "flag": "MISSING_DATA"}
+    if start == 0:
+        return None, "ZERO_BASE"
+    if start > 0 and end < 0:
+        return None, "DECLINE_TO_LOSS"
+    if start < 0 and end > 0:
+        return None, "TURNAROUND"
+    if start < 0 and end < 0:
+        return None, "BOTH_NEGATIVE"
 
-    # Case: both positive - normal case
-    if start_value > 0 and end_value > 0:
-        value = ((end_value / start_value) ** (1 / n_years) - 1) * 100
-        return {"value": value, "flag": None}
+    # start > 0, end >= 0 (normal case, incl. end == 0 -> -100% CAGR, allowed)
+    try:
+        value = ((end / start) ** (1.0 / n_years) - 1) * 100
+    except (ValueError, ZeroDivisionError):
+        return None, "INSUFFICIENT"
+    if isinstance(value, complex) or math.isnan(value):
+        return None, "INSUFFICIENT"
+    return value, None
 
-    # Case: zero base - growth rate from zero is undefined (division by zero,
-    # and "infinite % growth" is not a meaningful business number)
-    if start_value == 0:
-        return {"value": None, "flag": "ZERO_BASE"}
 
-    # Case: both negative - e.g. a loss shrinking from -200 to -50 is
-    # actually IMPROVING, but the raw ratio (end/start) is positive and
-    # would produce a misleadingly "normal-looking" CAGR number if computed
-    # directly. Flag it instead of pretending the math is meaningful here.
-    if start_value < 0 and end_value < 0:
-        return {"value": None, "flag": "BOTH_NEGATIVE"}
-
-# Case: decline to loss - company was profitable/positive at the start
-    # but ended negative (e.g. sales +100 -> -50). No real growth rate
-    # exists across a sign change; this is a distinct, important business
-    # signal worth flagging by name rather than burying in a null.
-    if start_value > 0 and end_value < 0:
-        return {"value": None, "flag": "DECLINE_TO_LOSS"}
-
-    # Case: turnaround - company started negative and ended positive
-    # (e.g. profit -50 -> +100). Also no real CAGR, but a very different
-    # (positive) business story than DECLINE_TO_LOSS, so it gets its own flag.
-    if start_value < 0 and end_value > 0:
-        return {"value": None, "flag": "TURNAROUND"}
-
-    # placeholder for the last case - added next
-    return {"value": None, "flag": "UNHANDLED"}
-
-def compute_cagr_from_series(values_by_year, n_years):
+def cagr_from_series(year_value_pairs, window_years):
     """
-    Wrapper around compute_cagr() that works from a full time series
-    (e.g. {"2019-03": 100, "2020-03": 120, ...}) instead of two raw numbers.
-
-    Returns {"value": None, "flag": "INSUFFICIENT"} if fewer than n_years+1
-    data points are available - you need a start AND an end point n years
-    apart, so an n-year window requires at least n+1 years of data on record.
+    year_value_pairs: list of (year:int, value:float) sorted or unsorted.
+    window_years: 3, 5, or 10.
+    Picks the latest year as `end` and (latest - window_years) as `start`,
+    requiring an exact match on both endpoints; else INSUFFICIENT.
     """
-    years_sorted = sorted(values_by_year.keys())
+    if not year_value_pairs:
+        return None, "INSUFFICIENT"
+    by_year = {y: v for y, v in year_value_pairs if v is not None}
+    if not by_year:
+        return None, "INSUFFICIENT"
+    end_year = max(by_year)
+    start_year = end_year - window_years
+    if start_year not in by_year or end_year not in by_year:
+        return None, "INSUFFICIENT"
+    return cagr(by_year[start_year], by_year[end_year], window_years)
 
-    if len(years_sorted) < n_years + 1:
-        return {"value": None, "flag": "INSUFFICIENT"}
 
-    start_year = years_sorted[-(n_years + 1)]
-    end_year = years_sorted[-1]
-
-    start_value = values_by_year[start_year]
-    end_value = values_by_year[end_year]
-
-    return compute_cagr(start_value, end_value, n_years)
+if __name__ == "__main__":
+    print(cagr(100, 200, 5))          # normal
+    print(cagr(100, -50, 5))          # DECLINE_TO_LOSS
+    print(cagr(-100, 50, 5))          # TURNAROUND
+    print(cagr(-100, -50, 5))         # BOTH_NEGATIVE
+    print(cagr(0, 100, 5))            # ZERO_BASE
+    print(cagr(100, 200, None))       # INSUFFICIENT

@@ -1,38 +1,47 @@
-.PHONY: install load validate ratios report dashboard test clean
-
-install:
-	pip install -r requirements.txt
+.PHONY: load validate ratios screener valuation nlp cashflow reports dashboard api test clean all
 
 load:
-	python src/etl/loader.py
+	python3 src/etl/loader.py
 
 validate:
-	python src/etl/validator.py
+	python3 src/etl/validator.py
 
 ratios:
-	python src/analytics/populate_ratios.py
+	python3 src/analytics/populate_ratios.py
 
-# Regenerates every derived output (peer percentiles, radar charts, capital
-# allocation, ratio edge-case log, valuation, screener/peer Excel exports)
-# in the correct dependency order - see run_pipeline.py's docstring for why
-# order matters here (financial_ratios gets rebuilt from raw source data by
-# loader.py, so anything reading it needs the full chain re-run afterward).
-report:
-	python run_pipeline.py
+screener:
+	python3 src/screener/export_screener.py
+	python3 src/analytics/peer.py
+	python3 src/analytics/export_peer_comparison.py
+	python3 src/analytics/radar.py
+
+valuation:
+	python3 src/analytics/valuation.py
+
+nlp:
+	python3 src/nlp/parser.py
+	python3 src/nlp/pros_cons_generator.py
+
+cashflow:
+	python3 src/analytics/cashflow_intelligence_report.py
+
+reports:
+	python3 src/reports/tearsheet.py
+	python3 src/reports/sector_report.py
+	python3 src/reports/portfolio_summary.py
 
 dashboard:
 	streamlit run src/dashboard/app.py
 
+api:
+	@echo "No standalone API server in this build -- data is served directly from nifty100.db by the dashboard."
+
 test:
-	python -m pytest tests/ -v
+	python3 tests/run_tests.py tests/etl tests/kpi
 
 clean:
 	rm -f db/nifty100.db
-	rm -f output/*.csv
-	find . -type d -name __pycache__ -exec rm -rf {} +
+	rm -rf output/*.csv output/*.xlsx output/*.log output/*.md
+	rm -rf reports/tearsheets/* reports/sector/* reports/portfolio/* reports/radar_charts/*
 
-# NOTE: an 'api' target was listed in the Sprint 1 planning doc's summary,
-# but no API epic/sprint has been scoped or built anywhere in Sprints 1-5 -
-# there's no FastAPI/Flask app in this codebase to run. Left out rather
-# than pointing at a script that doesn't exist; add this target if/when
-# that work is actually scoped.
+all: load validate ratios screener valuation nlp cashflow reports test
