@@ -10,6 +10,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 from cashflow_kpis import distress_signal, deleveraging_flag
+from cagr import cagr_from_series
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
@@ -76,10 +77,15 @@ def run():
 
         sector = sectors.set_index("company_id")["broad_sector"].get(cid)
 
+        # FCF CAGR 5yr: same cagr_from_series engine used for revenue/PAT/EPS CAGR
+        # in populate_ratios.py, applied to this company's free_cash_flow_cr history.
+        fcf_series = list(zip(fr[fr.company_id == cid]["year"], fr[fr.company_id == cid]["free_cash_flow_cr"]))
+        fcf_cagr_5yr_val, fcf_cagr_5yr_flag = cagr_from_series(fcf_series, 5)
+
         rows.append(dict(
             company_id=cid, sector=sector, cfo_quality_score=row.cfo_quality_score,
             cfo_quality_label=cfo_label, capex_intensity_pct=row.capex_intensity_pct,
-            capex_label=cx_label, fcf_cagr_5yr=None,  # not separately tracked; see note in retro
+            capex_label=cx_label, fcf_cagr_5yr=fcf_cagr_5yr_val, fcf_cagr_5yr_flag=fcf_cagr_5yr_flag,
             fcf_conversion_pct=row.fcf_conversion_pct, distress_flag=distress,
             deleveraging_flag=deleveraging, capital_allocation_label=pattern_label,
         ))
@@ -91,8 +97,8 @@ def run():
 
     cfi_df = pd.DataFrame(rows).merge(companies, on="company_id", how="left")
     cfi_df = cfi_df[["company_id", "company_name", "sector", "cfo_quality_score", "cfo_quality_label",
-                      "capex_intensity_pct", "capex_label", "fcf_cagr_5yr", "fcf_conversion_pct",
-                      "distress_flag", "deleveraging_flag", "capital_allocation_label"]]
+                      "capex_intensity_pct", "capex_label", "fcf_cagr_5yr", "fcf_cagr_5yr_flag",
+                      "fcf_conversion_pct", "distress_flag", "deleveraging_flag", "capital_allocation_label"]]
     cfi_df.to_excel(os.path.join(OUT_DIR, "cashflow_intelligence.xlsx"), index=False)
 
     distress_df = pd.DataFrame(distress_rows)
