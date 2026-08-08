@@ -13,6 +13,7 @@ st.title("🏭 Sector Analysis")
 import sqlite3
 import pandas as pd
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
 companies = get_companies()
 ratios = get_ratios()
 idx = ratios.groupby("company_id")["year"].idxmax()

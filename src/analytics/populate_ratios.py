@@ -12,7 +12,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
 from ratios import (net_profit_margin, operating_profit_margin, opm_cross_check,
-                     return_on_equity, return_on_capital_employed, return_on_assets,
+                     return_on_equity, roe_reliable_flag, return_on_capital_employed, return_on_assets,
                      debt_to_equity, high_leverage_flag, interest_coverage_ratio,
                      icr_label, icr_warning_flag, net_debt, asset_turnover)
 from cagr import cagr_from_series
@@ -45,6 +45,7 @@ def compute_row_ratios(row):
     npm = net_profit_margin(row.net_profit, row.sales)
     opm_computed = operating_profit_margin(row.operating_profit, row.sales)
     roe = return_on_equity(row.net_profit, row.equity_capital, row.reserves)
+    roe_reliable = roe_reliable_flag(row.net_profit, row.equity_capital, row.reserves, row.total_assets)
     roce = return_on_capital_employed(row.ebit, row.equity_capital, row.reserves, row.borrowings)
     roa = return_on_assets(row.net_profit, row.total_assets)
     de = debt_to_equity(row.borrowings, row.equity_capital, row.reserves)
@@ -67,7 +68,8 @@ def compute_row_ratios(row):
             bvps = None
     return dict(
         net_profit_margin_pct=npm, operating_profit_margin_pct=opm_computed,
-        return_on_equity_pct=roe, return_on_capital_employed_pct=roce, return_on_assets_pct=roa,
+        return_on_equity_pct=roe, roe_reliable_flag=(int(roe_reliable) if roe_reliable is not None else None),
+        return_on_capital_employed_pct=roce, return_on_assets_pct=roa,
         debt_to_equity=de, high_leverage_flag=int(bool(hlf)),
         interest_coverage=icr, icr_label=icr_lbl, icr_warning_flag=int(bool(icr_warn)),
         net_debt_cr=ndebt, asset_turnover=at,
@@ -187,7 +189,7 @@ def run():
 
     ratios_df = ratios_df[[
         "company_id", "year", "net_profit_margin_pct", "operating_profit_margin_pct",
-        "return_on_equity_pct", "return_on_capital_employed_pct", "return_on_assets_pct",
+        "return_on_equity_pct", "roe_reliable_flag", "return_on_capital_employed_pct", "return_on_assets_pct",
         "debt_to_equity", "high_leverage_flag", "interest_coverage", "icr_label", "icr_warning_flag",
         "net_debt_cr", "asset_turnover", "free_cash_flow_cr", "capex_cr", "earnings_per_share",
         "book_value_per_share", "dividend_payout_ratio_pct", "total_debt_cr", "cash_from_operations_cr",

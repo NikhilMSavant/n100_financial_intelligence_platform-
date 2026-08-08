@@ -1,6 +1,7 @@
 """pages/02_profile.py — Sprint 4 / Day 23"""
 import os
 import sys
+import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -40,12 +41,21 @@ if ratios.empty:
 
 latest = ratios.iloc[-1]
 c1, c2, c3, c4, c5, c6 = st.columns(6)
-c1.metric("ROE", f"{latest.return_on_equity_pct:.1f}%" if latest.return_on_equity_pct is not None else "N/A")
+roe_display = "N/A"
+if pd.notna(latest.return_on_equity_pct):
+    if latest.get("roe_reliable_flag") == 0:
+        roe_display = f"{latest.return_on_equity_pct:.1f}%*"
+    else:
+        roe_display = f"{latest.return_on_equity_pct:.1f}%"
+c1.metric("ROE", roe_display)
 c2.metric("ROCE", f"{latest.return_on_capital_employed_pct:.1f}%" if latest.return_on_capital_employed_pct is not None else "N/A")
 c3.metric("Net Profit Margin", f"{latest.net_profit_margin_pct:.1f}%" if latest.net_profit_margin_pct is not None else "N/A")
 c4.metric("D/E", f"{latest.debt_to_equity:.2f}" if latest.debt_to_equity is not None else "N/A")
 c5.metric("Revenue CAGR 5yr", f"{latest.revenue_cagr_5yr:.1f}%" if latest.revenue_cagr_5yr is not None else "N/A")
 c6.metric("FCF (latest yr, Cr)", f"{latest.free_cash_flow_cr:,.0f}" if latest.free_cash_flow_cr is not None else "N/A")
+if latest.get("roe_reliable_flag") == 0:
+    st.caption("*ROE is calculated on a very thin equity base relative to total assets for this company "
+               "— the ratio is mathematically correct but not a reliable efficiency signal on its own.")
 
 st.divider()
 col1, col2 = st.columns(2)

@@ -24,15 +24,20 @@ st.write(f"**{len(docs)} report years available**")
 
 
 def check_url(url, timeout=4):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    # Some hosts (e.g. bseindia.com) reject a bare HEAD request from a
+    # non-browser client with 403/405 even though the file is genuinely
+    # there -- treating that the same as a 404 falsely marks every link on
+    # such a host as dead. Send a browser-like User-Agent, and fall back to
+    # a streamed GET (aborted after headers) if HEAD itself is rejected.
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                              "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"}
     try:
         r = requests.head(url, timeout=timeout, allow_redirects=True, headers=headers)
         if r.status_code in (403, 405):
-            # server blocks HEAD or bots -- try a lightweight GET instead
             r = requests.get(url, timeout=timeout, allow_redirects=True, headers=headers, stream=True)
         return r.status_code < 400
     except Exception:
-        return None  # unknown -- shown as unverified, not failed
+        return None  # unknown (offline / blocked) -- shown as unverified, not failed
 
 
 for _, row in docs.iterrows():

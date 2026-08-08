@@ -34,10 +34,10 @@ if "slider_vals" not in st.session_state:
     st.session_state.slider_vals = PRESET_DEFAULTS["Quality"].copy()
 
 st.sidebar.subheader("Presets")
-preset_cols = st.sidebar.columns(3)
+preset_cols = st.sidebar.columns(2)
 preset_names = list(PRESET_DEFAULTS.keys())
 for i, name in enumerate(preset_names):
-    if preset_cols[i % 3].button(name):
+    if preset_cols[i % 2].button(name, use_container_width=True):
         st.session_state.slider_vals = PRESET_DEFAULTS[name].copy()
 
 st.sidebar.subheader("Filters")

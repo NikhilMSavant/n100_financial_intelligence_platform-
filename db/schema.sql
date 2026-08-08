@@ -148,6 +148,7 @@ CREATE TABLE financial_ratios (
     net_profit_margin_pct          REAL,
     operating_profit_margin_pct    REAL,
     return_on_equity_pct           REAL,
+    roe_reliable_flag               INTEGER,
     return_on_capital_employed_pct REAL,
     return_on_assets_pct           REAL,
     debt_to_equity                 REAL,

@@ -50,6 +50,31 @@ def return_on_equity(net_profit, equity_capital, reserves):
     return net_profit / denom * 100
 
 
+def roe_reliable_flag(net_profit, equity_capital, reserves, total_assets, equity_threshold_pct=5.0):
+    """
+    ROE = net_profit / net_worth is mathematically well-defined even when the
+    inputs are economically implausible, so this flags two distinct failure
+    modes rather than just one:
+      1. Thin equity base: net worth is a tiny sliver of total assets (e.g.
+         after large buybacks), so ROE can look enormous even with a normal
+         profit -- ROE is "real" but not a meaningful efficiency signal.
+      2. Implausible profit scale: net_profit exceeds total_assets outright
+         (ROA > 100%), which isn't achievable by a real business in a single
+         year -- this points to a units/scale mismatch in the source data
+         between the P&L and balance-sheet figures, not a thin-equity effect.
+    Returns False if either condition holds, True if neither does, None if
+    required inputs are missing.
+    """
+    net_profit = _safe(net_profit)
+    equity_capital, reserves, total_assets = _safe(equity_capital), _safe(reserves), _safe(total_assets)
+    if equity_capital is None or reserves is None or not total_assets:
+        return None
+    net_worth = equity_capital + reserves
+    thin_equity = net_worth <= 0 or (net_worth / total_assets * 100) < equity_threshold_pct
+    implausible_profit_scale = net_profit is not None and abs(net_profit) > total_assets
+    return not (thin_equity or implausible_profit_scale)
+
+
 def return_on_capital_employed(ebit, equity_capital, reserves, borrowings):
     ebit, equity_capital, reserves, borrowings = (_safe(x) for x in (ebit, equity_capital, reserves, borrowings))
     if None in (ebit, equity_capital, reserves, borrowings):

@@ -1,7 +1,8 @@
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src", "analytics"))
 from ratios import (net_profit_margin, operating_profit_margin, opm_cross_check,
-                     return_on_equity, return_on_capital_employed, return_on_assets,
+                     return_on_equity, roe_reliable_flag,
+                     return_on_capital_employed, return_on_assets,
                      debt_to_equity, high_leverage_flag, interest_coverage_ratio,
                      icr_label, icr_warning_flag, net_debt, asset_turnover)
 
@@ -88,3 +89,27 @@ def test_net_debt():
 
 def test_asset_turnover_zero_assets_is_none():
     assert asset_turnover(1000, 0) is None
+
+
+def test_roe_reliable_normal_case():
+    # net_profit well within total_assets, healthy equity base -> reliable
+    assert roe_reliable_flag(100, 300, 700, 5000) is True
+
+
+def test_roe_reliable_flags_thin_equity_base():
+    # net worth is 2% of total assets -> flagged unreliable even with sane profit
+    assert roe_reliable_flag(10, 5, 15, 1000) is False
+
+
+def test_roe_reliable_flags_implausible_profit_scale():
+    # net_profit (7595) exceeds total_assets (476) -- economically impossible
+    # in a single year, points to a units/scale mismatch in source data
+    assert roe_reliable_flag(7595, 5, 202, 476) is False
+
+
+def test_roe_reliable_none_when_total_assets_missing():
+    assert roe_reliable_flag(100, 10, 90, None) is None
+
+
+def test_roe_reliable_false_for_negative_net_worth():
+    assert roe_reliable_flag(100, -50, -60, 1000) is False
