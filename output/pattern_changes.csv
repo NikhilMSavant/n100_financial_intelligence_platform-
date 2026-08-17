@@ -1,0 +1,40 @@
+company_id,from_pattern,to_pattern,year
+ABB,Mixed,Shareholder Returns,2024-03
+ADANIENSOL,Mixed,Shareholder Returns,2024-03
+ADANIENT,Shareholder Returns,Mixed,2024-03
+ADANIGREEN,Reinvestor,Mixed,2024-03
+AXISBANK,Mixed,Growth Funded by Debt,2024-03
+BAJAJ-AUTO,Liquidating Assets,Reinvestor,2024-03
+BANKBARODA,Pre-Revenue,Growth Funded by Debt,2024-03
+BEL,Liquidating Assets,Shareholder Returns,2024-03
+BRITANNIA,Reinvestor,Liquidating Assets,2024-03
+CANBK,Growth Funded by Debt,Shareholder Returns,2024-03
+DLF,Reinvestor,Mixed,2024-03
+GAIL,Mixed,Reinvestor,2024-03
+GODREJCP,Reinvestor,Mixed,2024-03
+HAL,Reinvestor,Shareholder Returns,2024-03
+HAVELLS,Liquidating Assets,Reinvestor,2024-03
+HDFCBANK,Mixed,Liquidating Assets,2024-03
+HDFCLIFE,Mixed,Shareholder Returns,2024-03
+HEROMOTOCO,Reinvestor,Shareholder Returns,2024-03
+ICICIBANK,Growth Funded by Debt,Mixed,2024-03
+ICICIPRULI,Shareholder Returns,Mixed,2024-03
+INDUSINDBK,Growth Funded by Debt,Pre-Revenue,2024-03
+IRFC,Distress Signal,Reinvestor,2024-03
+ITC,Reinvestor,Liquidating Assets,2024-03
+JINDALSTEL,Reinvestor,Mixed,2024-03
+JIOFIN,Shareholder Returns,Mixed,2024-03
+KOTAKBANK,Growth Funded by Debt,Mixed,2024-03
+LODHA,Liquidating Assets,Mixed,2024-03
+LT,Reinvestor,Liquidating Assets,2024-03
+MOTHERSON,Shareholder Returns,Mixed,2024-03
+NHPC,Reinvestor,Shareholder Returns,2024-03
+PNB,Mixed,Growth Funded by Debt,2024-03
+RELIANCE,Mixed,Shareholder Returns,2024-03
+SBIN,Growth Funded by Debt,Reinvestor,2024-03
+SHRIRAMFIN,Distress Signal,Growth Funded by Debt,2024-03
+SUNPHARMA,Mixed,Shareholder Returns,2024-03
+TATACONSUM,Shareholder Returns,Mixed,2024-03
+TATAPOWER,Mixed,Shareholder Returns,2024-03
+TITAN,Mixed,Reinvestor,2024-03
+TORNTPHARM,Mixed,Shareholder Returns,2024-03

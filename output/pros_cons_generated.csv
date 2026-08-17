@@ -1,0 +1,231 @@
+company_id,type,rule_id,text,confidence_pct
+ABB,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ABB,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+ADANIENSOL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ADANIENSOL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+ADANIENT,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+ADANIENT,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ADANIGREEN,con,CON-01,Debt-to-equity ratio of 6.4 is elevated for a non-financial company and warrants monitoring,80
+ADANIGREEN,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ADANIPORTS,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ADANIPORTS,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+ADANIPOWER,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ADANIPOWER,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+AMBUJACEM,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+AMBUJACEM,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+APOLLOHOSP,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+APOLLOHOSP,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ASIANPAINT,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+ASIANPAINT,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ATGL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ATGL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+AXISBANK,pro,PRO-05,Operating profit margin above 25% indicates strong pricing power and cost discipline,80
+AXISBANK,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+AXISBANK,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+AXISBANK,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+AXISBANK,con,CON-10,Return on capital employed below 10% suggests the business is not generating sufficient returns on invested capital,74
+BAJAJ-AUTO,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+BAJAJ-AUTO,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BAJAJFINSV,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BAJAJFINSV,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+BAJAJHLDNG,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BAJAJHLDNG,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+BAJFINANCE,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BAJFINANCE,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+BANKBARODA,pro,PRO-04,Revenue growing at above 15% CAGR over 5 years reflects strong business momentum,82
+BANKBARODA,pro,PRO-05,Operating profit margin above 25% indicates strong pricing power and cost discipline,80
+BANKBARODA,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+BANKBARODA,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+BANKBARODA,pro,PRO-10,Return on equity improving for 3 consecutive years shows strengthening business quality,75
+BANKBARODA,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+BANKBARODA,con,CON-03,Operating margins declining for 3 consecutive years suggest pricing or cost pressure,75
+BANKBARODA,con,CON-10,Return on capital employed below 10% suggests the business is not generating sufficient returns on invested capital,74
+BEL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BEL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+BHARTIARTL,con,CON-01,Debt-to-equity ratio of 2.6 is elevated for a non-financial company and warrants monitoring,80
+BHARTIARTL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BHEL,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+BHEL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BOSCHLTD,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BOSCHLTD,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+BPCL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BPCL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+BRITANNIA,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+BRITANNIA,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+CANBK,pro,PRO-04,Revenue growing at above 15% CAGR over 5 years reflects strong business momentum,82
+CANBK,pro,PRO-05,Operating profit margin above 25% indicates strong pricing power and cost discipline,80
+CANBK,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+CANBK,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+CANBK,pro,PRO-10,Return on equity improving for 3 consecutive years shows strengthening business quality,75
+CANBK,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+CANBK,con,CON-03,Operating margins declining for 3 consecutive years suggest pricing or cost pressure,75
+CANBK,con,CON-10,Return on capital employed below 10% suggests the business is not generating sufficient returns on invested capital,74
+CHOLAFIN,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+CHOLAFIN,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+CIPLA,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+CIPLA,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+COALINDIA,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+COALINDIA,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+DABUR,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+DABUR,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+DIVISLAB,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+DIVISLAB,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+DLF,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+DLF,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+DMART,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+DMART,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+DRREDDY,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+DRREDDY,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+EICHERMOT,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+EICHERMOT,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+GAIL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+GAIL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+GODREJCP,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+GODREJCP,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+GRASIM,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+GRASIM,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+HAL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+HAL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+HAVELLS,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+HAVELLS,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+HCLTECH,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+HCLTECH,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+HDFCBANK,pro,PRO-04,Revenue growing at above 15% CAGR over 5 years reflects strong business momentum,82
+HDFCBANK,pro,PRO-05,Operating profit margin above 25% indicates strong pricing power and cost discipline,80
+HDFCBANK,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+HDFCBANK,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+HDFCBANK,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+HDFCBANK,con,CON-06,Interest coverage ratio below 1.5x indicates the company is at risk of not meeting its debt obligations,88
+HDFCBANK,con,CON-10,Return on capital employed below 10% suggests the business is not generating sufficient returns on invested capital,74
+HDFCLIFE,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+HDFCLIFE,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+HEROMOTOCO,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+HEROMOTOCO,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+HINDALCO,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+HINDALCO,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+HINDUNILVR,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+HINDUNILVR,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ICICIBANK,pro,PRO-04,Revenue growing at above 15% CAGR over 5 years reflects strong business momentum,82
+ICICIBANK,pro,PRO-05,Operating profit margin above 25% indicates strong pricing power and cost discipline,80
+ICICIBANK,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+ICICIBANK,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+ICICIBANK,pro,PRO-10,Return on equity improving for 3 consecutive years shows strengthening business quality,75
+ICICIBANK,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+ICICIBANK,con,CON-03,Operating margins declining for 3 consecutive years suggest pricing or cost pressure,75
+ICICIBANK,con,CON-06,Interest coverage ratio below 1.5x indicates the company is at risk of not meeting its debt obligations,88
+ICICIBANK,con,CON-10,Return on capital employed below 10% suggests the business is not generating sufficient returns on invested capital,74
+ICICIGI,pro,PRO-03,Debt-free balance sheet provides financial flexibility and eliminates interest burden,85
+ICICIGI,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+ICICIPRULI,pro,PRO-03,Debt-free balance sheet provides financial flexibility and eliminates interest burden,85
+ICICIPRULI,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+INDIGO,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+INDIGO,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+INDUSINDBK,pro,PRO-04,Revenue growing at above 15% CAGR over 5 years reflects strong business momentum,82
+INDUSINDBK,pro,PRO-05,Operating profit margin above 25% indicates strong pricing power and cost discipline,80
+INDUSINDBK,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+INDUSINDBK,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+INDUSINDBK,pro,PRO-10,Return on equity improving for 3 consecutive years shows strengthening business quality,75
+INDUSINDBK,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+INDUSINDBK,con,CON-03,Operating margins declining for 3 consecutive years suggest pricing or cost pressure,75
+INDUSINDBK,con,CON-10,Return on capital employed below 10% suggests the business is not generating sufficient returns on invested capital,74
+INFY,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+INFY,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+IOC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+IOC,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+IRCTC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+IRCTC,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+IRFC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+IRFC,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+ITC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ITC,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+JINDALSTEL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+JINDALSTEL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+JIOFIN,pro,PRO-03,Debt-free balance sheet provides financial flexibility and eliminates interest burden,85
+JIOFIN,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+JSWENERGY,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+JSWENERGY,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+JSWSTEEL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+JSWSTEEL,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+KOTAKBANK,pro,PRO-05,Operating profit margin above 25% indicates strong pricing power and cost discipline,80
+KOTAKBANK,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+KOTAKBANK,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+KOTAKBANK,pro,PRO-10,Return on equity improving for 3 consecutive years shows strengthening business quality,75
+KOTAKBANK,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+KOTAKBANK,con,CON-06,Interest coverage ratio below 1.5x indicates the company is at risk of not meeting its debt obligations,88
+KOTAKBANK,con,CON-10,Return on capital employed below 10% suggests the business is not generating sufficient returns on invested capital,74
+LICI,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+LICI,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+LODHA,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+LODHA,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+LT,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+LT,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+LTIM,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+LTIM,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+M&M,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+M&M,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+MARUTI,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+MARUTI,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+MOTHERSON,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+MOTHERSON,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+NAUKRI,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+NAUKRI,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+NESTLEIND,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+NESTLEIND,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+NHPC,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+NHPC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+NTPC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+NTPC,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+ONGC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+ONGC,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+PFC,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+PFC,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+PIDILITIND,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+PIDILITIND,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+PNB,pro,PRO-01,Consistently high return on equity above 20% demonstrates exceptional capital efficiency,90
+PNB,pro,PRO-04,Revenue growing at above 15% CAGR over 5 years reflects strong business momentum,82
+PNB,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+POWERGRID,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+POWERGRID,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+RECLTD,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+RECLTD,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+RELIANCE,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+RELIANCE,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+SBILIFE,pro,PRO-03,Debt-free balance sheet provides financial flexibility and eliminates interest burden,85
+SBILIFE,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+SBIN,pro,PRO-06,Net profit compounding at above 20% over 5 years creates significant shareholder value,85
+SBIN,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+SBIN,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+SBIN,con,CON-06,Interest coverage ratio below 1.5x indicates the company is at risk of not meeting its debt obligations,88
+SHREECEM,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+SHREECEM,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+SHRIRAMFIN,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+SHRIRAMFIN,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+SIEMENS,pro,PRO-07,Very high interest coverage ratio reflects negligible financial stress from debt servicing,78
+SIEMENS,pro,PRO-09,Earnings per share growing above 15% CAGR indicates strong earnings quality and compounding,80
+SIEMENS,pro,PRO-10,Return on equity improving for 3 consecutive years shows strengthening business quality,75
+SIEMENS,pro,PRO-11,Revenue growing slower than profits shows improving operating leverage and scale benefits,70
+SIEMENS,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+SUNPHARMA,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+SUNPHARMA,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+TATACONSUM,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TATACONSUM,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+TATAMOTORS,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TATAMOTORS,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+TATAPOWER,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TATAPOWER,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+TATASTEEL,con,CON-05,Revenue contraction over 2 consecutive years indicates demand weakness or market share loss,78
+TATASTEEL,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+TATASTEEL,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TCS,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+TCS,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TECHM,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TECHM,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+TITAN,con,CON-01,Debt-to-equity ratio of 2.2 is elevated for a non-financial company and warrants monitoring,80
+TITAN,con,CON-08,Rising debt-to-equity ratio over 3 years suggests increasing financial leverage risk,76
+TITAN,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TORNTPHARM,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TORNTPHARM,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+TRENT,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TRENT,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61
+TVSMOTOR,pro,PRO-FALLBACK,Company maintains an active operating history within the Nifty 100 universe,61
+TVSMOTOR,con,CON-FALLBACK,Limited distinguishing risk signals identified from available financial history,61

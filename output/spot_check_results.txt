@@ -1,0 +1,9 @@
+TCS  year=2024-03
+  ROE      engine=50.9443  manual=50.9443  diff=0.00000%
+  RevCAGR5 engine=10.4636  manual=10.4636  diff=0.00000%
+RELIANCE  year=2024-03
+  ROE      engine=9.9587  manual=9.9587  diff=0.00000%
+  RevCAGR5 engine=9.6061  manual=9.6061  diff=0.00000%
+HDFCBANK  year=2024-03
+  ROE      engine=14.3397  manual=14.3397  diff=0.00000%
+  RevCAGR5 engine=21.9510  manual=21.9510  diff=0.00000%

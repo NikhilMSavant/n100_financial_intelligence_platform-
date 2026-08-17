@@ -1,0 +1,8 @@
+company_id,metric_type,period_years,value_pct
+TCS,stock_price_cagr,1,16.0
+HDFCBANK,stock_price_cagr,1,13.0
+INFY,stock_price_cagr,1,27.0
+SBILIFE,revenue_cagr,10,23.0
+SBILIFE,pat_cagr,10,9.0
+SBILIFE,stock_price_cagr,10,9.0
+SBILIFE,roe,10,16.0
