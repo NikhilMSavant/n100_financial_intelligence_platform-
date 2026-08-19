@@ -1,1 +1,10 @@
-
+company_id,field,raw_value
+TCS,compounded_sales_growth,TTM:            5%             
+TCS,compounded_profit_growth,TTM:                 8%
+TCS,roe,Last Year:       52%
+HDFCBANK,compounded_sales_growth,TTM:            47%
+HDFCBANK,compounded_profit_growth,TTM:                27%
+HDFCBANK,roe,Last Year:    17%
+INFY,compounded_sales_growth,TTM:            3%
+INFY,compounded_profit_growth,TTM:                 8%
+INFY,roe,Last Year:     32%

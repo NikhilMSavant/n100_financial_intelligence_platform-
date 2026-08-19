@@ -1,91 +1,63 @@
-"""
-normaliser.py — Sprint 1 / Day 02
-Normalises raw year-labels and ticker strings coming out of the source
-Excel workbooks into a consistent shape the rest of the pipeline can rely on.
-"""
+"""Normalisation utilities for tickers and financial-year labels."""
 import re
-import pandas as pd
 
-MONTH_MAP = {
-    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+MONTHS = {
+    "jan": "01", "feb": "02", "mar": "03", "march": "03", "apr": "04",
+    "may": "05", "jun": "06", "jul": "07", "aug": "08", "sep": "09",
+    "sept": "09", "oct": "10", "nov": "11", "dec": "12", "december": "12",
 }
 
-_YEAR_RE = re.compile(r"([A-Za-z]{3,})[\s\-]*'?(\d{2,4})")
+YEAR_RE = re.compile(r"^\d{4}-\d{2}$")
 
 
-def normalize_year(raw):
-    """
-    Turns labels like 'Mar 2014', 'Mar-13', 'Dec 2012', 'TTM' into a
-    canonical fiscal year INT (the calendar year the statement is dated in),
-    plus a 'is_ttm' flag folded into the return via None for TTM rows.
+def normalize_ticker(raw) -> str:
+    """Strip whitespace and upper-case a company ticker; raise if out of range."""
+    if raw is None:
+        raise ValueError("MISSING_TICKER")
+    t = str(raw).strip().upper()
+    if not (2 <= len(t) <= 12):
+        raise ValueError(f"TICKER_LENGTH_OUT_OF_RANGE:{t}")
+    return t
 
-    Returns: int fiscal_year, or None if the row is a TTM / unparsable row.
+
+def normalize_year(raw) -> str:
+    """Convert a variety of raw financial-year labels to 'YYYY-MM'.
+
+    Supported inputs: 'Mar-23', 'Mar 23', 'Mar 2023', 'March-2023', '2023',
+    'FY23', 'Dec-22', 'Dec 2012', already-normalised 'YYYY-MM'.
+    Unparseable input returns 'PARSE_ERROR'.
     """
     if raw is None:
-        return None
+        return "PARSE_ERROR"
     s = str(raw).strip()
-    if not s or s.upper() == "TTM":
-        return None
+    if not s:
+        return "PARSE_ERROR"
 
-    m = _YEAR_RE.match(s)
-    if not m:
-        return None
-    _, year_part = m.groups()
-    year = int(year_part)
-    if year < 100:
-        # 2-digit year e.g. 'Mar-13' -> 2013
-        year += 2000
-    return year
+    if YEAR_RE.match(s):
+        return s
 
+    if s.upper() == "TTM":
+        return "PARSE_ERROR"  # trailing-twelve-months has no fixed FY end; excluded from time series
 
-def normalize_month(raw):
-    """Returns the 3-letter lowercase month abbreviation found in the label, or None."""
-    if raw is None:
-        return None
-    s = str(raw).strip()
-    if not s or s.upper() == "TTM":
-        return None
-    m = _YEAR_RE.match(s)
-    if not m:
-        return None
-    mon_part, _ = m.groups()
-    mon_key = mon_part[:3].lower()
-    return mon_key if mon_key in MONTH_MAP else None
+    # Pure 4-digit year -> assume March FY close
+    if re.match(r"^\d{4}$", s):
+        return f"{s}-03"
 
+    # FY23 / FY2023
+    m = re.match(r"^FY\s*(\d{2,4})$", s, re.IGNORECASE)
+    if m:
+        yy = m.group(1)
+        year = f"20{yy}" if len(yy) == 2 else yy
+        return f"{year}-03"
 
-def is_ttm(raw):
-    return raw is not None and str(raw).strip().upper() == "TTM"
+    # Month-Year or Month Year variants: Mar-23, Mar 23, Mar-2023, Mar 2023, March-2023
+    m = re.match(r"^([A-Za-z]+)[\s\-]?(\d{2,4})$", s)
+    if m:
+        mon_raw, yr_raw = m.group(1).lower(), m.group(2)
+        mon = MONTHS.get(mon_raw)
+        if mon is None:
+            return "PARSE_ERROR"
+        year = f"20{yr_raw}" if len(yr_raw) == 2 else yr_raw
+        return f"{year}-{mon}"
 
-
-def normalize_ticker(raw):
-    """
-    Cleans a company_id / ticker string: strips whitespace, uppercases,
-    removes stray punctuation that sometimes creeps in from Excel exports.
-    """
-    if raw is None:
-        return None
-    s = str(raw).strip().upper()
-    s = re.sub(r"[^A-Z0-9\-&]", "", s)
-    return s or None
-
-
-def normalize_numeric(raw):
-    """Best-effort coercion of a numeric-looking Excel cell to float, else None."""
-    if raw is None or (isinstance(raw, float) and pd.isna(raw)):
-        return None
-    if isinstance(raw, (int, float)):
-        return float(raw)
-    s = str(raw).strip().replace(",", "")
-    if s in ("", "-", "NA", "N/A", "nan"):
-        return None
-    try:
-        return float(s)
-    except ValueError:
-        return None
-
-
-if __name__ == "__main__":
-    samples = ["Mar 2014", "Mar-13", "Dec 2012", "TTM", "Sep 2024", None, "  abc123  "]
-    for s in samples:
-        print(f"{s!r:15} -> year={normalize_year(s)} ttm={is_ttm(s)}")
+    return "PARSE_ERROR"

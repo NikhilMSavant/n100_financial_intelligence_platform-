@@ -1,90 +1,92 @@
-"""
-sector_report.py — Sprint 5 / Day 34
-Generates one PDF per broad_sector: a summary page with median KPIs plus a
-list of all companies in that sector with 8 metrics each.
-"""
-import os
+"""Sprint 5 Day 34-35 — 11 sector PDFs + 1 portfolio summary PDF."""
+import sys
+import pathlib
 import sqlite3
 import pandas as pd
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
-from reportlab.lib.colors import HexColor
+from reportlab.lib.units import cm
 from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
-OUT_DIR = os.path.join(ROOT, "reports", "sector")
-NAVY = HexColor("#0B2545")
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from screener.engine import load_latest_universe
 
+MARGIN = 1.5 * cm
+PAGE_W, _ = A4
+UW = PAGE_W - 2 * MARGIN
 styles = getSampleStyleSheet()
-CELL = ParagraphStyle("cell", parent=styles["Normal"], fontSize=7.5, leading=9, wordWrap="CJK")
-
-METRICS = ["return_on_equity_pct", "return_on_capital_employed_pct", "net_profit_margin_pct",
-           "debt_to_equity", "interest_coverage", "free_cash_flow_cr", "revenue_cagr_5yr",
-           "composite_quality_score"]
-METRIC_LABELS = ["ROE %", "ROCE %", "NPM %", "D/E", "ICR", "FCF Cr", "Rev CAGR5", "Score"]
+navy = colors.HexColor("#1F4E78")
+header_style = ParagraphStyle("hdr", parent=styles["Title"], textColor=colors.white, fontSize=16)
+body_style = ParagraphStyle("body", parent=styles["Normal"], fontSize=7, wordWrap="CJK")
 
 
-def build_sector_pdf(sector, companies_df, out_path):
-    doc = SimpleDocTemplate(out_path, pagesize=A4, topMargin=10 * mm, bottomMargin=10 * mm,
-                             leftMargin=10 * mm, rightMargin=10 * mm)
-    story = []
-    header_style = ParagraphStyle("h", parent=styles["Title"], textColor=colors.white, fontSize=16)
-    header = Table([[Paragraph(f"{sector} — Sector Report", header_style)]], colWidths=[190 * mm])
-    header.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), NAVY),
-                                 ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8)]))
-    story.append(header)
-    story.append(Spacer(1, 8))
-
-    story.append(Paragraph(f"<b>{len(companies_df)} companies</b> — median KPIs", styles["Heading3"]))
-    med_row = ["Median"] + [f"{companies_df[m].median():.1f}" if pd.notna(companies_df[m].median()) else "N/A"
-                             for m in METRICS]
-    med_tbl = Table([["Metric"] + METRIC_LABELS, med_row], colWidths=[25 * mm] + [21 * mm] * 8)
-    med_tbl.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                                  ("BACKGROUND", (0, 0), (-1, 0), colors.whitesmoke),
-                                  ("FONTSIZE", (0, 0), (-1, -1), 8)]))
-    story.append(med_tbl)
-    story.append(Spacer(1, 10))
-
-    story.append(Paragraph("All companies", styles["Heading3"]))
-    header_cells = [Paragraph("<b>Company</b>", CELL)] + [Paragraph(f"<b>{l}</b>", CELL) for l in METRIC_LABELS]
-    data = [header_cells]
-    for _, r in companies_df.sort_values("composite_quality_score", ascending=False).iterrows():
-        row = [Paragraph(f"{r.company_id}", CELL)]
-        for m in METRICS:
-            v = r[m]
-            row.append(Paragraph(f"{v:.1f}" if pd.notna(v) else "N/A", CELL))
-        data.append(row)
-    tbl = Table(data, colWidths=[25 * mm] + [20.6 * mm] * 8, repeatRows=1)
-    tbl.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.4, colors.lightgrey),
-                              ("BACKGROUND", (0, 0), (-1, 0), NAVY),
-                              ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                              ("VALIGN", (0, 0), (-1, -1), "TOP")]))
-    story.append(tbl)
-    doc.build(story)
+def _header(text):
+    t = Table([[Paragraph(text, header_style)]], colWidths=[UW])
+    t.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), navy), ("TOPPADDING", (0, 0), (-1, -1), 8),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 8), ("LEFTPADDING", (0, 0), (-1, -1), 8)]))
+    return t
 
 
-def run():
-    os.makedirs(OUT_DIR, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    fr = pd.read_sql("SELECT * FROM financial_ratios", conn)
-    idx = fr.groupby("company_id")["year"].idxmax()
-    latest = fr.loc[idx]
-    sectors = pd.read_sql("SELECT company_id, broad_sector FROM sectors", conn)
-    df = latest.merge(sectors, on="company_id", how="left")
-
+def generate_sector_reports(universe):
+    pathlib.Path("reports/sector").mkdir(parents=True, exist_ok=True)
     n = 0
-    for sector, g in df.groupby("broad_sector"):
-        safe_name = sector.replace("/", "-").replace(" ", "_")
-        out_path = os.path.join(OUT_DIR, f"{safe_name}_report.pdf")
-        build_sector_pdf(sector, g, out_path)
+    for sector, grp in universe.groupby("broad_sector"):
+        if pd.isna(sector):
+            continue
+        safe_name = str(sector).replace("/", "-").replace(" ", "_")
+        path = f"reports/sector/{safe_name}_report.pdf"
+        doc = SimpleDocTemplate(path, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN, topMargin=MARGIN, bottomMargin=MARGIN)
+        story = [_header(f"{sector} — Sector Report"), Spacer(1, 10)]
+
+        med = grp[["return_on_equity_pct", "debt_to_equity", "operating_profit_margin_pct", "pe_ratio"]].median()
+        summary_data = [["Metric", "Sector Median"]] + [[k, f"{v:.2f}" if v == v else "N/A"] for k, v in med.items()]
+        st_tbl = Table(summary_data, colWidths=[UW * 0.6, UW * 0.4])
+        st_tbl.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                                     ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E8EEF4"))]))
+        story.append(st_tbl)
+        story.append(Spacer(1, 10))
+
+        cols = ["company_id", "company_name", "return_on_equity_pct", "debt_to_equity",
+                "operating_profit_margin_pct", "pe_ratio", "revenue_cagr_5yr", "composite_quality_score"]
+        header_row = [Paragraph(f"<b>{c}</b>", body_style) for c in cols]
+        rows = [header_row]
+        for _, r in grp.sort_values("composite_quality_score", ascending=False).iterrows():
+            rows.append([Paragraph(str(r[c])[:20] if pd.notna(r[c]) else "N/A", body_style) for c in cols])
+        comp_tbl = Table(rows, colWidths=[UW / len(cols)] * len(cols), repeatRows=1)
+        comp_tbl.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.3, colors.lightgrey),
+                                       ("BACKGROUND", (0, 0), (-1, 0), navy)]))
+        story.append(comp_tbl)
+        doc.build(story)
         n += 1
-    print(f"Sector PDFs written: {n} -> {OUT_DIR}")
-    conn.close()
+    print(f"Sector reports generated: {n}")
     return n
 
 
+def generate_portfolio_summary(universe):
+    pathlib.Path("reports/portfolio").mkdir(parents=True, exist_ok=True)
+    path = "reports/portfolio/portfolio_summary.pdf"
+    doc = SimpleDocTemplate(path, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN, topMargin=MARGIN, bottomMargin=MARGIN)
+    story = [_header("Nifty 100 — Portfolio Summary"), Spacer(1, 10)]
+
+    for _, row in universe.sort_values("company_id").iterrows():
+        story.append(Paragraph(f"<b>{row['company_name']} ({row['company_id']})</b> — {row.get('broad_sector')}",
+                                ParagraphStyle("co", parent=styles["Heading3"], textColor=navy, fontSize=10)))
+        kpis = {
+            "ROE": row.get("return_on_equity_pct"), "ROCE": row.get("return_on_capital_employed_pct"),
+            "NPM": row.get("net_profit_margin_pct"), "D/E": row.get("debt_to_equity"),
+            "Rev CAGR 5yr": row.get("revenue_cagr_5yr"), "Composite Score": row.get("composite_quality_score"),
+        }
+        line = "  |  ".join(f"{k}: {v:.1f}" if isinstance(v, (int, float)) and v == v else f"{k}: N/A" for k, v in kpis.items())
+        story.append(Paragraph(line, body_style))
+        story.append(Spacer(1, 6))
+    doc.build(story)
+    print("Portfolio summary generated:", path)
+
+
 if __name__ == "__main__":
-    run()
+    conn = sqlite3.connect("data/nifty100.db")
+    universe = load_latest_universe(conn)
+    conn.close()
+    generate_sector_reports(universe)
+    generate_portfolio_summary(universe)

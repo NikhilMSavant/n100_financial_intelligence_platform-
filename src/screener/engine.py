@@ -1,103 +1,107 @@
-"""
-engine.py — Sprint 3 / Day 15-16
-Loads screener_config.yaml, joins financial_ratios + sectors + market_cap +
-profitandloss into one analysis frame, and applies threshold filters /
-preset screeners against it.
-"""
-import os
+"""Sprint 3 — Filter engine: loads screener_config.yaml, applies threshold
+filters to the financial_ratios (+ market_cap) DataFrame, and runs the 6
+preset screeners."""
+import sys
+import pathlib
 import sqlite3
 import yaml
+import numpy as np
 import pandas as pd
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
-CONFIG_PATH = os.path.join(ROOT, "config", "screener_config.yaml")
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from analytics.scoring import compute_composite_score
+
+DB_PATH = "data/nifty100.db"
+CONFIG_PATH = "config/screener_config.yaml"
 
 
-def load_config():
-    with open(CONFIG_PATH) as f:
-        return yaml.safe_load(f)
+def load_latest_universe(conn):
+    """One row per company: latest-year financial_ratios + latest market_cap + sector + company name."""
+    # Only consider years with a real P&L (net_profit_margin present) as candidates for "latest" —
+    # excludes interim/partial balance-sheet-only snapshots (e.g. half-year BS updates with no matching P&L).
+    ratios = pd.read_sql("SELECT * FROM financial_ratios WHERE net_profit_margin_pct IS NOT NULL", conn)
+    ratios = ratios.sort_values(["company_id", "year"]).groupby("company_id").tail(1).reset_index(drop=True)
 
-
-def build_universe(conn, latest_only=True):
-    """One row per company (latest available fiscal year), with ratios + valuation + sector joined."""
-    fr = pd.read_sql("SELECT * FROM financial_ratios", conn)
-    if latest_only:
-        idx = fr.groupby("company_id")["year"].idxmax()
-        fr = fr.loc[idx].reset_index(drop=True)
+    mcap = pd.read_sql("SELECT * FROM market_cap", conn)
+    mcap_latest = mcap.sort_values(["company_id", "year"]).groupby("company_id").tail(1).reset_index(drop=True)
+    mcap_latest = mcap_latest.rename(columns={"year": "mcap_year"})
 
     sectors = pd.read_sql("SELECT company_id, broad_sector, sub_sector FROM sectors", conn)
-    companies = pd.read_sql("SELECT company_id, company_name FROM companies", conn)
-    pl = pd.read_sql("SELECT company_id, year, sales, net_profit, dividend_payout FROM profitandloss", conn)
-    mc = pd.read_sql("SELECT * FROM market_cap", conn)
-    mc_idx = mc.groupby("company_id")["year"].idxmax()
-    mc_latest = mc.loc[mc_idx].reset_index(drop=True)
+    companies = pd.read_sql("SELECT id AS company_id, company_name FROM companies", conn)
+    pl_latest = pd.read_sql("SELECT company_id, year, sales, net_profit FROM profitandloss", conn)
+    pl_latest = pl_latest.sort_values(["company_id", "year"]).groupby("company_id").tail(1).reset_index(drop=True)
 
-    df = fr.merge(companies, on="company_id", how="left")
-    df = df.merge(sectors, on="company_id", how="left")
-    df = df.merge(pl, on=["company_id", "year"], how="left", suffixes=("", "_pl"))
-    df = df.merge(mc_latest.drop(columns=["year"]), on="company_id", how="left")
+    df = ratios.merge(mcap_latest, on="company_id", how="left") \
+               .merge(sectors, on="company_id", how="left") \
+               .merge(companies, on="company_id", how="left") \
+               .merge(pl_latest[["company_id", "sales", "net_profit"]], on="company_id", how="left")
 
-    # D/E declining YoY (needed for Turnaround Watch preset)
-    fr_all = pd.read_sql("SELECT company_id, year, debt_to_equity, free_cash_flow_cr, "
-                          "revenue_cagr_3yr FROM financial_ratios", conn).sort_values(["company_id", "year"])
-    fr_all["de_prev"] = fr_all.groupby("company_id")["debt_to_equity"].shift(1)
-    fr_all["de_declining"] = fr_all["debt_to_equity"] < fr_all["de_prev"]
-    latest_de = fr_all.loc[fr_all.groupby("company_id")["year"].idxmax(), ["company_id", "de_declining"]]
-    df = df.merge(latest_de, on="company_id", how="left")
-
+    df["fcf_yield_pct"] = np.where(df["market_cap_crore"] > 0,
+                                    df["free_cash_flow_cr"] / df["market_cap_crore"] * 100, np.nan)
+    df["composite_quality_score"] = compute_composite_score(df, sector_relative=False)
+    df["composite_quality_score_sector_relative"] = compute_composite_score(df, sector_relative=True)
     return df
 
 
-def apply_filters(df, filters, config):
-    """filters: dict of metric_key -> threshold value, using config['metrics'] mapping."""
-    metrics = config["metrics"]
-    out = df.copy()
-    for key, threshold in filters.items():
-        if key == "de_declining_yoy":
-            if threshold:
-                out = out[out["de_declining"] == True]  # noqa: E712
-            continue
-        if key == "dividend_payout_max":
-            out = out[out["dividend_payout_ratio_pct"].fillna(999) <= threshold]
-            continue
-        if key not in metrics:
-            continue
-        col = metrics[key]["column"]
-        direction = metrics[key]["direction"]
-        if col not in out.columns:
-            continue
-        if key == "de_max":
-            # D/E filter: auto-skip Financials sector (structurally high leverage is normal)
-            mask_fin = out["broad_sector"] == "Financials"
-            mask_pass = out[col] <= threshold
-            out = out[mask_fin | mask_pass]
-            continue
-        if key == "icr_min":
-            # Debt Free (ICR label, value None) always passes any ICR minimum
-            mask_debtfree = out["icr_label"] == "Debt Free"
-            mask_pass = out[col] >= threshold
-            out = out[mask_debtfree | mask_pass]
-            continue
-        if direction == "min":
-            out = out[out[col].fillna(-1e18) >= threshold]
+def _passes(row, field, cond, config):
+    val = row.get(field)
+    if field == "debt_to_equity" and config.get("de_filter_skip_sector") and row.get("broad_sector") == config["de_filter_skip_sector"]:
+        return True  # D/E filter automatically skipped for Financials sector
+    if field == "interest_coverage" and row.get("icr_label") == "Debt Free":
+        return True  # Debt Free treated as ICR = infinity -> passes any minimum
+    if val is None or (isinstance(val, float) and np.isnan(val)):
+        return False
+    if "min" in cond and val < cond["min"]:
+        return False
+    if "max" in cond and val > cond["max"]:
+        return False
+    if "equals" in cond and val != cond["equals"]:
+        return False
+    return True
+
+
+def apply_filters(df: pd.DataFrame, filters: dict, config: dict) -> pd.DataFrame:
+    mask = pd.Series(True, index=df.index)
+    for field, cond in filters.items():
+        mask &= df.apply(lambda r: _passes(r, field, cond, config), axis=1)
+    return df[mask]
+
+
+def turnaround_watch(df: pd.DataFrame, conn) -> pd.DataFrame:
+    """Special preset: Revenue CAGR 3yr > 10%, FCF positive latest year, D/E declining YoY."""
+    base = df[(df["revenue_cagr_3yr"] > 10) & (df["free_cash_flow_cr"] > 0)]
+    ratios_all = pd.read_sql("SELECT company_id, year, debt_to_equity FROM financial_ratios", conn)
+    declining = []
+    for cid in base["company_id"]:
+        g = ratios_all[ratios_all.company_id == cid].sort_values("year")
+        if len(g) >= 2 and pd.notna(g["debt_to_equity"].iloc[-1]) and pd.notna(g["debt_to_equity"].iloc[-2]):
+            if g["debt_to_equity"].iloc[-1] < g["debt_to_equity"].iloc[-2]:
+                declining.append(cid)
+    return base[base["company_id"].isin(declining)]
+
+
+def run_screener():
+    conn = sqlite3.connect(DB_PATH)
+    df = load_latest_universe(conn)
+    with open(CONFIG_PATH) as f:
+        config = yaml.safe_load(f)
+
+    results = {}
+    for key, preset in config["presets"].items():
+        if key == "turnaround_watch":
+            res = turnaround_watch(df, conn)
         else:
-            out = out[out[col].fillna(1e18) <= threshold]
-    return out
-
-
-def run_preset(df, preset_key, config):
-    preset = config["presets"][preset_key]
-    result = apply_filters(df, preset["filters"], config)
-    result = result.sort_values("composite_quality_score", ascending=False)
-    return preset["label"], result
+            res = apply_filters(df, preset["filters"], config)
+        rank_col = preset["rank_by"]
+        if rank_col in res.columns:
+            res = res.sort_values(rank_col, ascending=False)
+        results[key] = res
+        lo, hi = preset["expected_range"]
+        status = "OK" if lo <= len(res) <= hi else "OUT_OF_RANGE"
+        print(f"{preset['label']}: {len(res)} companies (expected {lo}-{hi}) [{status}]")
+    conn.close()
+    return df, results, config
 
 
 if __name__ == "__main__":
-    conn = sqlite3.connect(DB_PATH)
-    config = load_config()
-    universe = build_universe(conn)
-    print(f"Universe size: {len(universe)} companies")
-    for key in config["presets"]:
-        label, result = run_preset(universe, key, config)
-        print(f"{label}: {len(result)} companies")
+    run_screener()

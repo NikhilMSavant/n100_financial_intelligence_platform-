@@ -1,100 +1,67 @@
-"""pages/02_profile.py — Sprint 4 / Day 23"""
-import os
-import sys
-import pandas as pd
 import streamlit as st
+import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from utils.db import get_companies, get_ratios, get_pl
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "utils"))
-from db import get_companies, get_ratios, get_pl, get_pros_cons
-
-st.set_page_config(page_title="Company Profile | Nifty 100 Analytics", layout="wide")
-st.title("🏢 Company Profile")
+st.set_page_config(page_title="Company Profile", layout="wide")
+st.title("Company Profile")
 
 companies = get_companies()
-options = (companies["company_id"] + " — " + companies["company_name"].fillna("")).tolist()
-choice = st.selectbox("Search by company name or ticker", options=[""] + options)
-ticker = choice.split(" — ")[0] if choice else None
+query = st.text_input("Search company name or ticker").strip().upper()
+matches = companies[companies["id"].str.contains(query) | companies["company_name"].str.upper().str.contains(query)] if query else companies
+ticker = st.selectbox("Select company", matches["id"].tolist()) if not matches.empty else None
 
-if not ticker:
-    st.info("Start typing a company name or ticker above to see its profile.")
-    st.stop()
+if ticker is None:
+    st.warning("Ticker not found — please try another")
+else:
+    row = companies[companies["id"] == ticker].iloc[0]
+    st.header(f"{row['company_name']} ({ticker})")
+    st.caption(f"{row['broad_sector']} · {row['sub_sector']}")
+    st.write(row.get("about_company") or "")
 
-row = companies[companies.company_id == ticker]
-if row.empty:
-    st.error("Ticker not found — please try another")
-    st.stop()
-row = row.iloc[0]
-
-st.header(f"{row.company_name} ({ticker})")
-st.caption(f"{row.broad_sector or 'N/A'} · {row.sub_sector or 'N/A'} · NSE: {ticker}")
-if row.about_company:
-    st.write(row.about_company)
-
-ratios = get_ratios(ticker=ticker).sort_values("year")
-pl = get_pl(ticker)
-
-if ratios.empty:
-    st.warning("No ratio history available for this company.")
-    st.stop()
-
-latest = ratios.iloc[-1]
-c1, c2, c3, c4, c5, c6 = st.columns(6)
-roe_display = "N/A"
-if pd.notna(latest.return_on_equity_pct):
-    if latest.get("roe_reliable_flag") == 0:
-        roe_display = f"{latest.return_on_equity_pct:.1f}%*"
+    ratios = get_ratios(ticker)
+    if ratios.empty:
+        st.info("No ratio history available for this ticker.")
     else:
-        roe_display = f"{latest.return_on_equity_pct:.1f}%"
-c1.metric("ROE", roe_display)
-c2.metric("ROCE", f"{latest.return_on_capital_employed_pct:.1f}%" if latest.return_on_capital_employed_pct is not None else "N/A")
-c3.metric("Net Profit Margin", f"{latest.net_profit_margin_pct:.1f}%" if latest.net_profit_margin_pct is not None else "N/A")
-c4.metric("D/E", f"{latest.debt_to_equity:.2f}" if latest.debt_to_equity is not None else "N/A")
-c5.metric("Revenue CAGR 5yr", f"{latest.revenue_cagr_5yr:.1f}%" if latest.revenue_cagr_5yr is not None else "N/A")
-c6.metric("FCF (latest yr, Cr)", f"{latest.free_cash_flow_cr:,.0f}" if latest.free_cash_flow_cr is not None else "N/A")
-if latest.get("roe_reliable_flag") == 0:
-    st.caption("*ROE is calculated on a very thin equity base relative to total assets for this company "
-               "— the ratio is mathematically correct but not a reliable efficiency signal on its own.")
+        latest = ratios.dropna(subset=["net_profit_margin_pct"]).iloc[-1] if ratios["net_profit_margin_pct"].notna().any() else ratios.iloc[-1]
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
+        c1.metric("ROE", f"{latest['return_on_equity_pct']:.1f}%" if latest['return_on_equity_pct'] == latest['return_on_equity_pct'] else "N/A")
+        c2.metric("ROCE", f"{latest['return_on_capital_employed_pct']:.1f}%" if latest['return_on_capital_employed_pct'] == latest['return_on_capital_employed_pct'] else "N/A")
+        c3.metric("Net Profit Margin", f"{latest['net_profit_margin_pct']:.1f}%" if latest['net_profit_margin_pct'] == latest['net_profit_margin_pct'] else "N/A")
+        c4.metric("D/E", f"{latest['debt_to_equity']:.2f}" if latest['debt_to_equity'] == latest['debt_to_equity'] else "N/A")
+        c5.metric("Revenue CAGR 5yr", f"{latest['revenue_cagr_5yr']:.1f}%" if latest['revenue_cagr_5yr'] == latest['revenue_cagr_5yr'] else "N/A")
+        c6.metric("FCF (Cr)", f"₹{latest['free_cash_flow_cr']:.0f}" if latest['free_cash_flow_cr'] == latest['free_cash_flow_cr'] else "N/A")
 
-st.divider()
-col1, col2 = st.columns(2)
-with col1:
-    st.subheader("Revenue & Net Profit (10yr)")
-    if not pl.empty:
-        fig = go.Figure()
-        fig.add_bar(x=pl.year, y=pl.sales, name="Revenue")
-        fig.add_bar(x=pl.year, y=pl.net_profit, name="Net Profit")
-        fig.update_layout(barmode="group", height=380)
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("No P&L data available.")
+        pl = get_pl(ticker)
+        if not pl.empty:
+            fig1 = go.Figure()
+            fig1.add_bar(x=pl["year"], y=pl["sales"], name="Revenue")
+            fig1.add_bar(x=pl["year"], y=pl["net_profit"], name="Net Profit")
+            fig1.update_layout(barmode="group", title="10-Year Revenue & Net Profit (₹ Cr)")
+            st.plotly_chart(fig1, use_container_width=True)
 
-with col2:
-    st.subheader("ROE vs ROCE (10yr)")
-    fig2 = make_subplots(specs=[[{"secondary_y": True}]])
-    fig2.add_trace(go.Scatter(x=ratios.year, y=ratios.return_on_equity_pct, name="ROE %"), secondary_y=False)
-    fig2.add_trace(go.Scatter(x=ratios.year, y=ratios.return_on_capital_employed_pct, name="ROCE %"), secondary_y=True)
-    fig2.update_layout(height=380)
-    st.plotly_chart(fig2, use_container_width=True)
+        fig2 = go.Figure()
+        fig2.add_trace(go.Scatter(x=ratios["year"], y=ratios["return_on_equity_pct"], name="ROE %", yaxis="y1"))
+        fig2.add_trace(go.Scatter(x=ratios["year"], y=ratios["return_on_capital_employed_pct"], name="ROCE %", yaxis="y1"))
+        fig2.update_layout(title="ROE vs ROCE trend")
+        st.plotly_chart(fig2, use_container_width=True)
 
-st.divider()
-st.subheader("Pros & Cons")
-pc = get_pros_cons(ticker=ticker)
-pcol1, pcol2 = st.columns(2)
-with pcol1:
-    st.markdown("**Pros**")
-    pros = pc[pc.type == "pro"] if not pc.empty else pc
-    if len(pros):
-        for _, p in pros.iterrows():
-            st.success(f"✅ {p.text}")
-    else:
-        st.caption("No auto-generated pros above the confidence threshold.")
-with pcol2:
-    st.markdown("**Cons**")
-    cons = pc[pc.type == "con"] if not pc.empty else pc
-    if len(cons):
-        for _, c in cons.iterrows():
-            st.error(f"❌ {c.text}")
-    else:
-        st.caption("No auto-generated cons above the confidence threshold.")
+    st.subheader("Pros & Cons")
+    import sqlite3
+    conn = sqlite3.connect(str(pathlib.Path(__file__).resolve().parent.parent.parent.parent / "data" / "nifty100.db"))
+    pc = conn.execute("SELECT pros, cons FROM prosandcons WHERE company_id=?", (ticker,)).fetchall()
+    # Auto-generated pros/cons (Sprint 5) supplement sparse source data:
+    import pandas as pd
+    gen_path = pathlib.Path(__file__).resolve().parent.parent.parent.parent / "output" / "pros_cons_generated.csv"
+    if gen_path.exists():
+        gen = pd.read_csv(gen_path)
+        gen = gen[gen.company_id == ticker]
+        colp, colc = st.columns(2)
+        with colp:
+            for _, r in gen[gen.type == "pro"].iterrows():
+                st.success(f"✅ {r['text']}")
+        with colc:
+            for _, r in gen[gen.type == "con"].iterrows():
+                st.error(f"❌ {r['text']}")

@@ -1,36 +1,22 @@
-"""pages/07_capital.py — Sprint 4 / Day 25"""
-import os
-import sys
 import streamlit as st
 import plotly.express as px
+import pandas as pd
+import pathlib
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "utils"))
-from db import get_companies, get_capital_allocation
+st.set_page_config(page_title="Capital Allocation Map", layout="wide")
+st.title("Capital Allocation Map")
 
-st.set_page_config(page_title="Capital Allocation Map | Nifty 100 Analytics", layout="wide")
-st.title("🗺️ Capital Allocation Map")
+path = pathlib.Path(__file__).resolve().parent.parent.parent.parent / "output" / "capital_allocation.csv"
+if not path.exists():
+    st.warning("Run src/analytics/populate_ratios.py first to generate capital_allocation.csv")
+else:
+    df = pd.read_csv(path)
+    # only rows with an actual pattern (excludes snapshots with no matching cash-flow data)
+    df = df[df["pattern_label"].notna()]
+    latest = df.sort_values("year").groupby("company_id").tail(1)
 
-cap = get_capital_allocation()
-companies = get_companies()
+    fig = px.treemap(latest, path=["pattern_label", "company_id"], title="92 companies by capital allocation pattern")
+    st.plotly_chart(fig, use_container_width=True)
 
-if cap.empty:
-    st.warning("capital_allocation.csv not found — run src/analytics/populate_ratios.py first.")
-    st.stop()
-
-idx = cap.groupby("company_id")["year"].idxmax()
-latest_cap = cap.loc[idx].merge(companies[["company_id", "company_name", "broad_sector"]],
-                                 on="company_id", how="left")
-
-fig = px.treemap(
-    latest_cap, path=["pattern_label", "company_name"], color="pattern_label",
-    hover_data=["company_id", "broad_sector"],
-)
-fig.update_layout(height=600)
-st.plotly_chart(fig, use_container_width=True)
-
-st.subheader("Companies by pattern")
-pattern = st.selectbox("Pattern", options=sorted(latest_cap["pattern_label"].dropna().unique().tolist()))
-st.dataframe(
-    latest_cap[latest_cap.pattern_label == pattern][["company_id", "company_name", "broad_sector", "year"]],
-    use_container_width=True, hide_index=True,
-)
+    pattern = st.selectbox("Drill into a pattern", sorted(latest["pattern_label"].unique()))
+    st.dataframe(latest[latest.pattern_label == pattern][["company_id", "year", "cfo_sign", "cfi_sign", "cff_sign"]])

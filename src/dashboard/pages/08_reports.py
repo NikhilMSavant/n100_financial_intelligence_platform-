@@ -1,56 +1,28 @@
-"""pages/08_reports.py — Sprint 4 / Day 25"""
-import os
-import sys
-import requests
 import streamlit as st
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from utils.db import get_companies
+import sqlite3
+import pandas as pd
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "utils"))
-from db import get_companies, get_documents
-
-st.set_page_config(page_title="Annual Reports | Nifty 100 Analytics", layout="wide")
-st.title("📄 Annual Reports")
+st.set_page_config(page_title="Annual Reports", layout="wide")
+st.title("Annual Reports")
 
 companies = get_companies()
-options = (companies["company_id"] + " — " + companies["company_name"].fillna("")).tolist()
-choice = st.selectbox("Company", options=options)
-ticker = choice.split(" — ")[0]
+ticker = st.selectbox("Company", companies["id"].tolist())
 
-docs = get_documents(ticker)
+DB = str(pathlib.Path(__file__).resolve().parent.parent.parent.parent / "data" / "nifty100.db")
+conn = sqlite3.connect(DB)
+docs = pd.read_sql("SELECT year, annual_report FROM documents WHERE company_id=? ORDER BY year DESC", conn, params=(ticker,))
+
 if docs.empty:
-    st.info("No annual report links on file for this company.")
-    st.stop()
-
-st.write(f"**{len(docs)} report years available**")
-
-
-def check_url(url, timeout=4):
-    # Some hosts (e.g. bseindia.com) reject a bare HEAD request from a
-    # non-browser client with 403/405 even though the file is genuinely
-    # there -- treating that the same as a 404 falsely marks every link on
-    # such a host as dead. Send a browser-like User-Agent, and fall back to
-    # a streamed GET (aborted after headers) if HEAD itself is rejected.
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                              "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"}
-    try:
-        r = requests.head(url, timeout=timeout, allow_redirects=True, headers=headers)
-        if r.status_code in (403, 405):
-            r = requests.get(url, timeout=timeout, allow_redirects=True, headers=headers, stream=True)
-        return r.status_code < 400
-    except Exception:
-        return None  # unknown (offline / blocked) -- shown as unverified, not failed
-
-
-for _, row in docs.iterrows():
-    c1, c2, c3 = st.columns([1, 4, 2])
-    c1.write(f"**{row.year}**")
-    c2.write(row.annual_report or "—")
-    if row.annual_report:
-        ok = check_url(row.annual_report)
-        if ok is False:
-            c3.markdown(":red[Report unavailable]")
-        elif ok is True:
-            c3.markdown(f"[Open report]({row.annual_report})")
+    st.warning("No annual reports on file for this company.")
+else:
+    for _, r in docs.iterrows():
+        col1, col2 = st.columns([1, 4])
+        col1.write(f"**{r['year']}**")
+        url = r["annual_report"]
+        if isinstance(url, str) and url.startswith("http"):
+            col2.markdown(f"[Open report]({url})")
         else:
-            c3.markdown(f"[Open report (unverified)]({row.annual_report})")
-    else:
-        c3.markdown(":red[Report unavailable]")
+            col2.markdown(":red[Report unavailable]")

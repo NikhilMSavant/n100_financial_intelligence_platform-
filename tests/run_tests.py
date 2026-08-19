@@ -1,77 +1,71 @@
+"""Minimal test runner: discovers test_*.py files under tests/, imports them,
+and runs every top-level function named test_*. Used because pytest cannot be
+installed in this offline sandbox. Produces reports/pytest_report.html in a
+similar spirit to pytest's --html report.
 """
-run_tests.py — pytest is unavailable in this offline sandbox (no pip network
-access), so this is a tiny drop-in collector/runner for any test_*.py file
-under tests/, executing every top-level function named test_*.
-Usage: python3 tests/run_tests.py [tests/etl] [tests/kpi]
-"""
-import glob
 import importlib.util
-import os
+import pathlib
 import sys
+import time
 import traceback
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
-def load_module(path):
-    spec = importlib.util.spec_from_file_location(os.path.basename(path)[:-3], path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def run_dir(d):
-    passed, failed, skipped = 0, 0, 0
-    fails = []
-    for path in sorted(glob.glob(os.path.join(d, "test_*.py"))):
-        try:
-            mod = load_module(path)
-        except Exception as e:
-            print(f"COLLECT ERROR {path}: {e}")
-            failed += 1
-            continue
-        skip_marker = getattr(mod, "pytestmark", None)
-        fixtures = {}
-        for name in dir(mod):
-            if name.startswith("test_"):
-                fn = getattr(mod, name)
-                try:
-                    import inspect
-                    params = inspect.signature(fn).parameters
-                    args = []
-                    for p in params:
-                        if p not in fixtures:
-                            fixture_fn = getattr(mod, p, None)
-                            if fixture_fn is None:
-                                raise RuntimeError(f"no fixture '{p}'")
-                            gen = fixture_fn()
-                            val = next(gen)
-                            fixtures[p] = (gen, val)
-                        args.append(fixtures[p][1])
-                    fn(*args)
-                    passed += 1
-                except Exception as e:
-                    failed += 1
-                    fails.append((path, name, "".join(traceback.format_exception_only(type(e), e)).strip()))
-        for gen, _ in fixtures.values():
+def discover_and_run(test_dirs):
+    results = []
+    t_start = time.time()
+    for d in test_dirs:
+        for path in sorted((ROOT / d).glob("test_*.py")):
+            modname = f"{d.replace('/', '_')}_{path.stem}"
+            spec = importlib.util.spec_from_file_location(modname, path)
+            mod = importlib.util.module_from_spec(spec)
+            sys.path.insert(0, str(ROOT))
             try:
-                next(gen)
-            except StopIteration:
-                pass
-    return passed, failed, fails
+                spec.loader.exec_module(mod)
+            except Exception as e:
+                results.append((str(path), "<module load>", "ERROR", str(e)))
+                continue
+            for name in dir(mod):
+                if name.startswith("test_") and callable(getattr(mod, name)):
+                    fn = getattr(mod, name)
+                    try:
+                        fn()
+                        results.append((str(path), name, "PASS", ""))
+                    except AssertionError as e:
+                        results.append((str(path), name, "FAIL", str(e)))
+                    except Exception as e:
+                        results.append((str(path), name, "ERROR", "".join(traceback.format_exception_only(type(e), e))))
+    runtime = time.time() - t_start
+    return results, runtime
+
+
+def write_html_report(results, runtime, out_path):
+    n_pass = sum(1 for r in results if r[2] == "PASS")
+    n_fail = sum(1 for r in results if r[2] in ("FAIL", "ERROR"))
+    rows = "\n".join(
+        f"<tr style='background:{'#e6ffe6' if r[2]=='PASS' else '#ffe6e6'}'>"
+        f"<td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td></tr>"
+        for r in results
+    )
+    html = f"""<html><head><title>Test Report</title></head><body>
+    <h2>Nifty 100 Platform — Test Report</h2>
+    <p>Collected: {len(results)} | Passed: {n_pass} | Failed/Errors: {n_fail} | Runtime: {runtime:.2f}s</p>
+    <table border=1 cellpadding=4 cellspacing=0>
+    <tr><th>File</th><th>Test</th><th>Result</th><th>Detail</th></tr>
+    {rows}
+    </table></body></html>"""
+    pathlib.Path(out_path).write_text(html)
+    return n_pass, n_fail
 
 
 if __name__ == "__main__":
-    dirs = sys.argv[1:] or ["tests/etl", "tests/kpi"]
-    total_p = total_f = 0
-    all_fails = []
-    for d in dirs:
-        p, f, fails = run_dir(os.path.join(ROOT, d))
-        total_p += p
-        total_f += f
-        all_fails += fails
-        print(f"{d}: {p} passed, {f} failed")
-    print(f"\nTOTAL: {total_p} passed, {total_f} failed")
-    for path, name, msg in all_fails:
-        print(f"  FAIL {path}::{name} -> {msg}")
-    sys.exit(1 if total_f else 0)
+    test_dirs = sys.argv[1:] if len(sys.argv) > 1 else ["tests/etl", "tests/kpi", "tests/dq", "tests/api"]
+    results, runtime = discover_and_run(test_dirs)
+    n_pass, n_fail = write_html_report(results, runtime, "reports/pytest_report.html")
+    print(f"Collected {len(results)} tests in {runtime:.2f}s")
+    print(f"PASSED: {n_pass}  FAILED/ERROR: {n_fail}")
+    for r in results:
+        if r[2] != "PASS":
+            print(f"  {r[2]}: {r[0]}::{r[1]} -> {r[3]}")
+    sys.exit(0 if n_fail == 0 else 1)

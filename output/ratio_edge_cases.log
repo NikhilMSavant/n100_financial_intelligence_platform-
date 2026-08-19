@@ -1,268 +1,518 @@
-[OPM] ADANIENSOL 2024: computed=34.38911302462817 stored=30.0 diff>1pp
-[ROE] ADANIENT: engine=7.96% source=13.64% diff=5.7pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] ADANIGREEN: engine=11.0% source=96.5% diff=85.5pp category=data source issue
-[ROE] ADANIPOWER: engine=37.23% source=57.10% diff=19.9pp category=version difference (engine value used for analytics, source value for display only)
-[OPM] AXISBANK 2013: computed=30.58161350844278 stored=1353.0 diff>1pp
-[OPM] AXISBANK 2014: computed=31.474168597630626 stored=2307.0 diff>1pp
-[OPM] AXISBANK 2015: computed=31.36221426759492 stored=3097.0 diff>1pp
-[OPM] AXISBANK 2016: computed=32.611983995315704 stored=3466.0 diff>1pp
-[OPM] AXISBANK 2017: computed=53.450675766692115 stored=-5715.0 diff>1pp
-[OPM] AXISBANK 2018: computed=63.11708169506335 stored=-10277.0 diff>1pp
-[OPM] AXISBANK 2019: computed=49.385298075873855 stored=-5447.0 diff>1pp
-[OPM] AXISBANK 2020: computed=55.984673106090845 stored=-9859.0 diff>1pp
-[OPM] AXISBANK 2021: computed=50.119976004799035 stored=-2510.0 diff>1pp
-[OPM] AXISBANK 2022: computed=44.4691808777476 stored=3170.0 diff>1pp
-[OPM] AXISBANK 2023: computed=34.15645108261707 stored=13857.0 diff>1pp
-[OPM] AXISBANK 2024: computed=34.69264599658038 stored=11952.0 diff>1pp
-[ROCE] BAJAJFINSV: engine=10.6% source=21.1% diff=10.6pp category=version difference
-[ROE] BAJAJFINSV: engine=22.82% source=11.72% diff=11.1pp category=version difference (engine value used for analytics, source value for display only)
-[OPM] BAJFINANCE 2015: computed=32.49258160237389 stored=1367.0 diff>1pp
-[OPM] BAJFINANCE 2016: computed=32.25099328675161 stored=1986.0 diff>1pp
-[OPM] BAJFINANCE 2017: computed=32.59779338014042 stored=2867.0 diff>1pp
-[OPM] BAJFINANCE 2018: computed=32.28463831790366 stored=3935.0 diff>1pp
-[OPM] BAJFINANCE 2019: computed=29.501812084167252 stored=6310.0 diff>1pp
-[OPM] BAJFINANCE 2020: computed=34.72738302874043 stored=7608.0 diff>1pp
-[OPM] BAJFINANCE 2021: computed=40.63659880778315 stored=6314.0 diff>1pp
-[OPM] BAJFINANCE 2022: computed=37.546221674409786 stored=9906.0 diff>1pp
-[OPM] BAJFINANCE 2023: computed=30.65127623095313 stored=16018.0 diff>1pp
-[OPM] BAJFINANCE 2024: computed=29.285818234737686 stored=19987.0 diff>1pp
-[ROCE] BAJFINANCE: engine=3.9% source=11.9% diff=8.0pp category=version difference
-[ROE] BAJFINANCE: engine=16.65% source=22.10% diff=5.5pp category=version difference (engine value used for analytics, source value for display only)
-[OPM] BANKBARODA 2013: computed=30.047747104988748 stored=1006.0 diff>1pp
-[OPM] BANKBARODA 2014: computed=29.777821713664338 stored=809.0 diff>1pp
-[OPM] BANKBARODA 2015: computed=29.981075364577535 stored=902.0 diff>1pp
-[OPM] BANKBARODA 2016: computed=55.440075110810284 stored=-11700.0 diff>1pp
-[OPM] BANKBARODA 2017: computed=43.28468958694039 stored=-4372.0 diff>1pp
-[OPM] BANKBARODA 2018: computed=56.654941809970474 stored=-9197.0 diff>1pp
-[OPM] BANKBARODA 2019: computed=48.79408762711223 stored=-5414.0 diff>1pp
-[OPM] BANKBARODA 2020: computed=51.439254705621394 stored=-11728.0 diff>1pp
-[OPM] BANKBARODA 2021: computed=51.22857065963344 stored=-6957.0 diff>1pp
-[OPM] BANKBARODA 2022: computed=51.12488928255093 stored=-2948.0 diff>1pp
-[OPM] BANKBARODA 2023: computed=40.45480037670762 stored=6329.0 diff>1pp
-[OPM] BANKBARODA 2024: computed=37.4889127294537 stored=4102.0 diff>1pp
-[ROCE] BEL: engine=3385.2% source=34.6% diff=3350.6pp category=data source issue
-[ROE] BEL: engine=4379.12% source=26.30% diff=4352.8pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] BHARTIARTL: engine=23.9% source=13.1% diff=10.8pp category=version difference
-[ROE] BHARTIARTL: engine=9.83% source=14.90% diff=5.1pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] BOSCHLTD: engine=28.7% source=20.6% diff=8.1pp category=version difference
-[ROE] BPCL: engine=34.83% source=41.90% diff=7.1pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] BRITANNIA: engine=56.6% source=48.9% diff=7.7pp category=version difference
-[ROE] BRITANNIA: engine=66.48% source=57.10% diff=9.4pp category=version difference (engine value used for analytics, source value for display only)
-[OPM] CANBK 2013: computed=21.182858820076316 stored=655.0 diff>1pp
-[OPM] CANBK 2014: computed=24.351781652767247 stored=-672.0 diff>1pp
-[OPM] CANBK 2015: computed=23.513569032022456 stored=-621.0 diff>1pp
-[OPM] CANBK 2016: computed=40.38465905220373 stored=-8008.0 diff>1pp
-[OPM] CANBK 2017: computed=37.84885544057698 stored=-5775.0 diff>1pp
-[OPM] CANBK 2018: computed=61.874470915467406 stored=-13350.0 diff>1pp
-[OPM] CANBK 2019: computed=56.72874392609122 stored=-11590.0 diff>1pp
-[OPM] CANBK 2020: computed=53.87769046805603 stored=-12867.0 diff>1pp
-[OPM] CANBK 2021: computed=61.82938806883692 stored=-18367.0 diff>1pp
-[OPM] CANBK 2022: computed=58.39493584841533 stored=-13657.0 diff>1pp
-[OPM] CANBK 2023: computed=49.80147872154625 stored=-9877.0 diff>1pp
-[OPM] CANBK 2024: computed=41.753906568101414 stored=-7745.0 diff>1pp
-[OPM] CHOLAFIN 2013: computed=26.770428015564203 stored=472.0 diff>1pp
-[OPM] CHOLAFIN 2014: computed=28.42329978652028 stored=578.0 diff>1pp
-[OPM] CHOLAFIN 2015: computed=28.559892328398384 stored=696.0 diff>1pp
-[OPM] CHOLAFIN 2016: computed=30.042714760322735 stored=899.0 diff>1pp
-[OPM] CHOLAFIN 2017: computed=28.163613123135917 stored=1143.0 diff>1pp
-[OPM] CHOLAFIN 2018: computed=26.101816873538407 stored=1451.0 diff>1pp
-[OPM] CHOLAFIN 2019: computed=22.960045019696118 stored=1888.0 diff>1pp
-[OPM] CHOLAFIN 2020: computed=27.789256198347108 stored=1699.0 diff>1pp
-[OPM] CHOLAFIN 2021: computed=30.397579046227698 stored=2094.0 diff>1pp
-[OPM] CHOLAFIN 2022: computed=28.83326763894363 stored=2924.0 diff>1pp
-[OPM] CHOLAFIN 2023: computed=28.104625892579943 stored=3515.0 diff>1pp
-[OPM] CHOLAFIN 2024: computed=28.10102802275218 stored=4548.0 diff>1pp
-[ROCE] CHOLAFIN: engine=3.0% source=10.4% diff=7.4pp category=version difference
-[OPM] CIPLA 2013: computed=73.25763981157145 stored=2214.0 diff>1pp
-[OPM] CIPLA 2014: computed=78.89511451882434 stored=2147.0 diff>1pp
-[OPM] CIPLA 2015: computed=80.94314676068753 stored=2163.0 diff>1pp
-[OPM] CIPLA 2016: computed=82.01595358955765 stored=2480.0 diff>1pp
-[OPM] CIPLA 2017: computed=82.65944143393081 stored=2496.0 diff>1pp
-[OPM] CIPLA 2018: computed=81.3473211929269 stored=2826.0 diff>1pp
-[OPM] CIPLA 2019: computed=81.07199608849774 stored=3097.0 diff>1pp
-[OPM] CIPLA 2020: computed=81.28648143824422 stored=3206.0 diff>1pp
-[OPM] CIPLA 2021: computed=77.80271398747391 stored=4252.0 diff>1pp
-[OPM] CIPLA 2022: computed=79.08376602490466 stored=4553.0 diff>1pp
-[OPM] CIPLA 2023: computed=77.90621017008746 stored=5027.0 diff>1pp
-[OPM] CIPLA 2024: computed=75.59168153953597 stored=6291.0 diff>1pp
-[ROCE] CIPLA: engine=67.7% source=22.8% diff=44.9pp category=data source issue
-[OPM] COALINDIA 2013: computed=73.51946473800565 stored=18087.0 diff>1pp
-[OPM] COALINDIA 2014: computed=74.83854520734195 stored=17766.0 diff>1pp
-[OPM] COALINDIA 2015: computed=76.60145709660011 stored=17343.0 diff>1pp
-[OPM] COALINDIA 2016: computed=75.96486045645446 stored=18714.0 diff>1pp
-[OPM] COALINDIA 2017: computed=84.0745100046057 stored=12448.0 diff>1pp
-[OPM] COALINDIA 2018: computed=89.10421847871991 stored=9288.0 diff>1pp
-[OPM] COALINDIA 2019: computed=74.88904062820076 stored=25007.0 diff>1pp
-[OPM] COALINDIA 2020: computed=77.53955037468776 stored=21581.0 diff>1pp
-[OPM] COALINDIA 2021: computed=79.3081998533757 stored=18628.0 diff>1pp
-[OPM] COALINDIA 2022: computed=77.46889668687052 stored=24721.0 diff>1pp
-[OPM] COALINDIA 2023: computed=68.00624945751237 stored=44232.0 diff>1pp
-[OPM] COALINDIA 2024: computed=66.29380849329698 stored=47971.0 diff>1pp
-[ROCE] COALINDIA: engine=90.7% source=63.6% diff=27.1pp category=data source issue
-[ROE] COALINDIA: engine=38.85% source=52.00% diff=13.2pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] GODREJCP: engine=4.7% source=26.5% diff=21.8pp category=data source issue
-[ROE] GODREJCP: engine=-4.61% source=6.77% diff=11.4pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] HAL: engine=3519.0% source=38.9% diff=3480.1pp category=data source issue
-[ROE] HAL: engine=3669.08% source=28.90% diff=3640.2pp category=version difference (engine value used for analytics, source value for display only)
-[OPM] HDFCBANK 2013: computed=35.22210758205293 stored=3534.0 diff>1pp
-[OPM] HDFCBANK 2014: computed=31.742450945834804 stored=5602.0 diff>1pp
-[OPM] HDFCBANK 2015: computed=31.903051355938892 stored=7214.0 diff>1pp
-[OPM] HDFCBANK 2016: computed=31.751686140400874 stored=9037.0 diff>1pp
-[OPM] HDFCBANK 2017: computed=32.558583887213224 stored=11374.0 diff>1pp
-[OPM] HDFCBANK 2018: computed=34.62620767282619 stored=13374.0 diff>1pp
-[OPM] HDFCBANK 2019: computed=33.145367579235646 stored=16592.0 diff>1pp
-[OPM] HDFCBANK 2020: computed=37.203839952859916 stored=14593.0 diff>1pp
-[OPM] HDFCBANK 2021: computed=40.80605513722074 stored=16848.0 diff>1pp
-[OPM] HDFCBANK 2022: computed=41.60560852165725 stored=20795.0 diff>1pp
-[OPM] HDFCBANK 2023: computed=36.91977933167012 stored=29932.0 diff>1pp
-[OPM] HDFCBANK 2024: computed=61.41252040373843 stored=-44685.0 diff>1pp
-[OPM] HDFCLIFE 2013: computed=96.26600284495022 stored=525.0 diff>1pp
-[OPM] HDFCLIFE 2014: computed=96.47559128509845 stored=605.0 diff>1pp
-[OPM] HDFCLIFE 2015: computed=96.78853573397024 stored=874.0 diff>1pp
-[OPM] HDFCLIFE 2016: computed=94.74119398048619 stored=953.0 diff>1pp
-[OPM] HDFCLIFE 2017: computed=96.82513786014944 stored=972.0 diff>1pp
-[OPM] HDFCLIFE 2018: computed=96.67079975201489 stored=1074.0 diff>1pp
-[OPM] HDFCLIFE 2019: computed=96.87298931926392 stored=1215.0 diff>1pp
-[OPM] HDFCLIFE 2020: computed=96.11640571817563 stored=1141.0 diff>1pp
-[OPM] HDFCLIFE 2021: computed=98.27480147634493 stored=1235.0 diff>1pp
-[OPM] HDFCLIFE 2022: computed=98.84098560915294 stored=778.0 diff>1pp
-[OPM] HDFCLIFE 2023: computed=99.88605124845101 stored=80.0 diff>1pp
-[OPM] HDFCLIFE 2024: computed=99.47675449833469 stored=531.0 diff>1pp
-[ROCE] HDFCLIFE: engine=609.8% source=6.6% diff=603.2pp category=data source issue
-[OPM] HEROMOTOCO 2014: computed=85.94263105835806 stored=3553.0 diff>1pp
-[OPM] HEROMOTOCO 2015: computed=87.21766286585809 stored=3520.0 diff>1pp
-[OPM] HEROMOTOCO 2016: computed=84.45373721755631 stored=4424.0 diff>1pp
-[OPM] HEROMOTOCO 2017: computed=83.9741349178609 stored=4585.0 diff>1pp
-[OPM] HEROMOTOCO 2018: computed=83.56645511122065 stored=5334.0 diff>1pp
-[OPM] HEROMOTOCO 2019: computed=85.2079715051073 stored=5025.0 diff>1pp
-[OPM] HEROMOTOCO 2020: computed=86.0873726669857 stored=4070.0 diff>1pp
-[OPM] HEROMOTOCO 2021: computed=86.89557156238897 stored=4058.0 diff>1pp
-[OPM] HEROMOTOCO 2022: computed=88.98176034651958 stored=3256.0 diff>1pp
-[OPM] HEROMOTOCO 2023: computed=88.00281046899701 stored=4099.0 diff>1pp
-[OPM] HEROMOTOCO 2024: computed=86.14676228532112 stored=5235.0 diff>1pp
-[ROCE] HEROMOTOCO: engine=166.2% source=29.1% diff=137.1pp category=data source issue
-[OPM] HINDALCO 2013: computed=90.39941141994937 stored=7699.0 diff>1pp
-[OPM] HINDALCO 2014: computed=90.85010547921775 stored=8024.0 diff>1pp
-[OPM] HINDALCO 2015: computed=91.51906867022755 stored=8844.0 diff>1pp
-[OPM] HINDALCO 2016: computed=92.12426209256877 stored=7778.0 diff>1pp
-[OPM] HINDALCO 2017: computed=87.70562165615267 stored=12317.0 diff>1pp
-[OPM] HINDALCO 2018: computed=88.1102245991162 stored=13695.0 diff>1pp
-[OPM] HINDALCO 2019: computed=88.11800033705627 stored=15511.0 diff>1pp
-[OPM] HINDALCO 2020: computed=87.89104821235102 stored=14306.0 diff>1pp
-[OPM] HINDALCO 2021: computed=86.69853342221684 stored=17559.0 diff>1pp
-[OPM] HINDALCO 2022: computed=85.46747394378112 stored=28347.0 diff>1pp
-[OPM] HINDALCO 2023: computed=89.84507307282192 stored=22666.0 diff>1pp
-[OPM] HINDALCO 2024: computed=88.94620349876368 stored=23872.0 diff>1pp
-[ROCE] HINDALCO: engine=109.1% source=11.3% diff=97.8pp category=data source issue
-[OPM] HINDUNILVR 2013: computed=84.37268552806991 stored=4220.0 diff>1pp
-[OPM] HINDUNILVR 2014: computed=83.72100978312923 stored=4759.0 diff>1pp
-[OPM] HINDUNILVR 2015: computed=83.07268860252721 stored=5412.0 diff>1pp
-[OPM] HINDUNILVR 2016: computed=81.63797924563475 stored=5910.0 diff>1pp
-[OPM] HINDUNILVR 2017: computed=80.91791809902901 stored=6328.0 diff>1pp
-[OPM] HINDUNILVR 2018: computed=78.90279926853285 stored=7499.0 diff>1pp
-[OPM] HINDUNILVR 2019: computed=77.41032816077335 stored=8880.0 diff>1pp
-[OPM] HINDUNILVR 2020: computed=75.21303069150139 stored=9861.0 diff>1pp
-[OPM] HINDUNILVR 2021: computed=75.27855745513311 stored=11626.0 diff>1pp
-[OPM] HINDUNILVR 2022: computed=75.48526103039318 stored=12857.0 diff>1pp
-[OPM] HINDUNILVR 2023: computed=76.64740838560581 stored=14147.0 diff>1pp
-[OPM] HINDUNILVR 2024: computed=76.31672482874498 stored=14659.0 diff>1pp
-[ROCE] HINDUNILVR: engine=90.1% source=27.2% diff=62.9pp category=data source issue
-[OPM] ICICIBANK 2013: computed=70.58928372507519 stored=-15085.0 diff>1pp
-[OPM] ICICIBANK 2014: computed=66.39584470179268 stored=-13084.0 diff>1pp
-[OPM] ICICIBANK 2015: computed=70.52980132450331 stored=-16120.0 diff>1pp
-[OPM] ICICIBANK 2016: computed=88.12358754680069 stored=-26955.0 diff>1pp
-[OPM] ICICIBANK 2017: computed=104.76042008532984 stored=-37737.0 diff>1pp
-[OPM] ICICIBANK 2018: computed=117.12300119043788 stored=-44906.0 diff>1pp
-[OPM] ICICIBANK 2019: computed=116.38326248228724 stored=-50971.0 diff>1pp
-[OPM] ICICIBANK 2020: computed=100.6188410580414 stored=-45190.0 diff>1pp
-[OPM] ICICIBANK 2021: computed=102.40682794432668 stored=-44805.0 diff>1pp
-[OPM] ICICIBANK 2022: computed=84.68770635278334 stored=-26558.0 diff>1pp
-[OPM] ICICIBANK 2023: computed=72.57469004765956 stored=-17341.0 diff>1pp
-[OPM] ICICIBANK 2024: computed=62.41380175029464 stored=-14152.0 diff>1pp
-[OPM] ICICIGI 2013: computed=104.46161515453637 stored=-178.0 diff>1pp
-[OPM] ICICIGI 2014: computed=105.19301470588236 stored=-225.0 diff>1pp
-[OPM] ICICIGI 2015: computed=105.24326877657062 stored=-221.0 diff>1pp
-[OPM] ICICIGI 2016: computed=87.33631692358695 stored=764.0 diff>1pp
-[OPM] ICICIGI 2017: computed=87.77925531914894 stored=919.0 diff>1pp
-[OPM] ICICIGI 2018: computed=103.79050925925925 stored=-262.0 diff>1pp
-[OPM] ICICIGI 2019: computed=85.04882200125414 stored=1669.0 diff>1pp
-[OPM] ICICIGI 2020: computed=84.61404879742989 stored=1772.0 diff>1pp
-[OPM] ICICIGI 2021: computed=82.97015048104596 stored=2072.0 diff>1pp
-[OPM] ICICIGI 2022: computed=93.660302009235 stored=1016.0 diff>1pp
-[OPM] ICICIGI 2023: computed=92.92906690534795 stored=1264.0 diff>1pp
-[OPM] ICICIGI 2024: computed=87.42129155073948 stored=2577.0 diff>1pp
-[ROCE] ICICIGI: engine=131.5% source=22.5% diff=109.0pp category=data source issue
-[OPM] ICICIPRULI 2013: computed=96.27965043695382 stored=745.0 diff>1pp
-[OPM] ICICIPRULI 2014: computed=93.12865497076024 stored=1504.0 diff>1pp
-[OPM] ICICIPRULI 2015: computed=95.1963544538937 stored=1655.0 diff>1pp
-[OPM] ICICIPRULI 2016: computed=91.16984028010936 stored=1842.0 diff>1pp
-[OPM] ICICIPRULI 2017: computed=95.22424370636767 stored=1806.0 diff>1pp
-[OPM] ICICIPRULI 2018: computed=95.44190358467245 stored=1771.0 diff>1pp
-[OPM] ICICIPRULI 2019: computed=98.69522224634011 stored=541.0 diff>1pp
-[OPM] ICICIPRULI 2020: computed=101.51724137931035 stored=-319.0 diff>1pp
-[OPM] ICICIPRULI 2021: computed=100.46885143420452 stored=-390.0 diff>1pp
-[OPM] ICICIPRULI 2022: computed=103.40444276634572 stored=-2163.0 diff>1pp
-[OPM] ICICIPRULI 2023: computed=103.48072427592219 stored=-1757.0 diff>1pp
-[OPM] ICICIPRULI 2024: computed=102.02531365231931 stored=-1829.0 diff>1pp
-[ROCE] ICICIPRULI: engine=796.0% source=8.8% diff=787.3pp category=data source issue
-[OPM] INDIGO 2013: computed=90.7095512332935 stored=855.0 diff>1pp
-[OPM] INDIGO 2014: computed=96.10506431591257 stored=433.0 diff>1pp
-[OPM] INDIGO 2015: computed=86.33393177737881 stored=1904.0 diff>1pp
-[OPM] INDIGO 2016: computed=80.39653035935564 stored=3164.0 diff>1pp
-[OPM] INDIGO 2017: computed=88.06243272335846 stored=2219.0 diff>1pp
-[OPM] INDIGO 2018: computed=86.8381043395161 stored=3030.0 diff>1pp
-[OPM] INDIGO 2019: computed=100.52988033828123 stored=-151.0 diff>1pp
-[OPM] INDIGO 2020: computed=88.62009173285603 stored=4069.0 diff>1pp
-[OPM] INDIGO 2021: computed=99.97950959633904 stored=2.0 diff>1pp
-[OPM] INDIGO 2022: computed=97.84813543635032 stored=558.0 diff>1pp
-[OPM] INDIGO 2023: computed=88.02483194357713 stored=6521.0 diff>1pp
-[OPM] INDIGO 2024: computed=76.29890862649484 stored=16331.0 diff>1pp
-[ROCE] INDIGO: engine=5405.7% source=24.5% diff=5381.2pp category=data source issue
-[OPM] INDUSINDBK 2013: computed=27.881999140770443 stored=286.0 diff>1pp
-[OPM] INDUSINDBK 2014: computed=30.95468863581294 stored=335.0 diff>1pp
-[OPM] INDUSINDBK 2015: computed=32.32562938505985 stored=288.0 diff>1pp
-[OPM] INDUSINDBK 2016: computed=35.27628032345013 stored=329.0 diff>1pp
-[OPM] INDUSINDBK 2017: computed=39.455782312925166 stored=379.0 diff>1pp
-[OPM] INDUSINDBK 2018: computed=37.931832648573575 stored=942.0 diff>1pp
-[OPM] INDUSINDBK 2019: computed=41.70073222227214 stored=-437.0 diff>1pp
-[OPM] INDUSINDBK 2020: computed=43.81405690859187 stored=-553.0 diff>1pp
-[OPM] INDUSINDBK 2021: computed=55.16206896551724 stored=-2469.0 diff>1pp
-[OPM] INDUSINDBK 2022: computed=51.39186295503212 stored=-839.0 diff>1pp
-[OPM] INDUSINDBK 2023: computed=42.68862736471624 stored=2067.0 diff>1pp
-[OPM] INDUSINDBK 2024: computed=38.55469091544986 stored=2978.0 diff>1pp
-[ROCE] IRCTC: engine=44.1% source=53.8% diff=9.7pp category=version difference
-[ROE] IRCTC: engine=31.54% source=40.40% diff=8.9pp category=version difference (engine value used for analytics, source value for display only)
-[OPM] JIOFIN 2023: computed=86.66666666666667 stored=88.0 diff>1pp
-[OPM] KOTAKBANK 2013: computed=60.92452482007751 stored=-1789.0 diff>1pp
-[OPM] KOTAKBANK 2014: computed=58.84365092608043 stored=-1379.0 diff>1pp
-[OPM] KOTAKBANK 2015: computed=72.96343569337037 stored=-3366.0 diff>1pp
-[OPM] KOTAKBANK 2016: computed=56.567983531026364 stored=-2263.0 diff>1pp
-[OPM] KOTAKBANK 2017: computed=66.439706145852 stored=-3965.0 diff>1pp
-[OPM] KOTAKBANK 2018: computed=66.86960327881899 stored=-4141.0 diff>1pp
-[OPM] KOTAKBANK 2019: computed=66.2331132043847 stored=-5114.0 diff>1pp
-[OPM] KOTAKBANK 2020: computed=67.44936368524826 stored=-5005.0 diff>1pp
-[OPM] KOTAKBANK 2021: computed=90.83485679463742 stored=-9958.0 diff>1pp
-[OPM] KOTAKBANK 2022: computed=90.98426246999199 stored=-8512.0 diff>1pp
-[OPM] KOTAKBANK 2023: computed=79.44058266707789 stored=-5746.0 diff>1pp
-[OPM] KOTAKBANK 2024: computed=83.66733645109092 stored=-13382.0 diff>1pp
-[ROCE] LICI: engine=48.8% source=63.8% diff=15.0pp category=data source issue
-[ROE] LICI: engine=41.91% source=63.61% diff=21.7pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] LT: engine=144.1% source=17.2% diff=126.9pp category=data source issue
-[ROE] LT: engine=73.77% source=10.49% diff=63.3pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] M&M: engine=15.0% source=27.0% diff=11.9pp category=version difference
-[ROCE] NESTLEIND: engine=137.0% source=185.4% diff=48.5pp category=data source issue
-[ROE] NESTLEIND: engine=98.57% source=135.61% diff=37.0pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] PFC: engine=3.3% source=10.0% diff=6.7pp category=version difference
-[ROE] PNB: engine=61.32% source=8.70% diff=52.6pp category=version difference (engine value used for analytics, source value for display only)
-[ROCE] POWERGRID: engine=18.8% source=13.2% diff=5.6pp category=version difference
-[ROCE] RELIANCE: engine=15.2% source=9.6% diff=5.6pp category=version difference
-[ROCE] SHREECEM: engine=22.7% source=14.8% diff=7.9pp category=version difference
-[ROCE] SHRIRAMFIN: engine=4.1% source=11.3% diff=7.2pp category=version difference
-[OPM] SUNPHARMA 2024: computed=26.84289749881436 stored=28.0 diff>1pp
-[ROCE] TATAMOTORS: engine=31.4% source=20.1% diff=11.3pp category=version difference
-[ROE] TATAMOTORS: engine=31.47% source=49.40% diff=17.9pp category=version difference (engine value used for analytics, source value for display only)
-[ROE] TATASTEEL: engine=-5.45% source=6.55% diff=12.0pp category=version difference (engine value used for analytics, source value for display only)
-[ROE] TCS: engine=45.42% source=0.52% diff=44.9pp category=formula discrepancy (engine value used for analytics, source value for display only)
-[ROCE] TECHM: engine=19.1% source=11.9% diff=7.2pp category=version difference
-[ROCE] TORNTPHARM: engine=33.1% source=23.2% diff=9.9pp category=version difference
-[ROCE] TRENT: engine=45.4% source=23.8% diff=21.6pp category=data source issue
+company_id,year,category,detail
+ABB,2012-12,ICR_DEBT_FREE,interest=0.0
+ABB,2014-03,ICR_DEBT_FREE,interest=0.0
+ABB,2015-03,ICR_DEBT_FREE,interest=0.0
+ADANIENSOL,2014-03,ICR_DEBT_FREE,interest=0.0
+ADANIENSOL,2018-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIENSOL,2020-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+ADANIENSOL,2024-03,OPM_CROSSCHECK_MISMATCH,source=30.0,computed=34.39
+ADANIGREEN,2021-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIGREEN,2021-03,CAGR_TURNAROUND,field=eps,window=3yr
+ADANIGREEN,2022-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIGREEN,2022-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+ADANIGREEN,2022-03,CAGR_TURNAROUND,field=eps,window=3yr
+ADANIGREEN,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIGREEN,2023-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+ADANIGREEN,2023-03,CAGR_TURNAROUND,field=eps,window=5yr
+ADANIGREEN,2024-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+ADANIGREEN,2024-03,CAGR_TURNAROUND,field=eps,window=5yr
+ADANIPOWER,2016-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIPOWER,2016-03,CAGR_TURNAROUND,field=eps,window=3yr
+ADANIPOWER,2019-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+ADANIPOWER,2019-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+ADANIPOWER,2021-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIPOWER,2021-03,CAGR_TURNAROUND,field=eps,window=3yr
+ADANIPOWER,2022-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIPOWER,2022-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+ADANIPOWER,2022-03,CAGR_TURNAROUND,field=eps,window=3yr
+ADANIPOWER,2022-03,CAGR_TURNAROUND,field=eps,window=5yr
+ADANIPOWER,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+ADANIPOWER,2023-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+ADANIPOWER,2023-03,CAGR_TURNAROUND,field=net_profit,window=10yr
+ADANIPOWER,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+ADANIPOWER,2023-03,CAGR_TURNAROUND,field=eps,window=5yr
+ADANIPOWER,2023-03,CAGR_TURNAROUND,field=eps,window=10yr
+ADANIPOWER,2024-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+ADANIPOWER,2024-03,CAGR_TURNAROUND,field=net_profit,window=10yr
+ADANIPOWER,2024-03,CAGR_TURNAROUND,field=eps,window=5yr
+ADANIPOWER,2024-03,CAGR_TURNAROUND,field=eps,window=10yr
+AXISBANK,2013-03,OPM_CROSSCHECK_MISMATCH,source=1353.0,computed=30.58
+AXISBANK,2014-03,OPM_CROSSCHECK_MISMATCH,source=2307.0,computed=31.47
+AXISBANK,2015-03,OPM_CROSSCHECK_MISMATCH,source=3097.0,computed=31.36
+AXISBANK,2016-03,OPM_CROSSCHECK_MISMATCH,source=3466.0,computed=32.61
+AXISBANK,2017-03,OPM_CROSSCHECK_MISMATCH,source=-5715.0,computed=53.45
+AXISBANK,2018-03,OPM_CROSSCHECK_MISMATCH,source=-10277.0,computed=63.12
+AXISBANK,2019-03,OPM_CROSSCHECK_MISMATCH,source=-5447.0,computed=49.39
+AXISBANK,2020-03,OPM_CROSSCHECK_MISMATCH,source=-9859.0,computed=55.98
+AXISBANK,2021-03,OPM_CROSSCHECK_MISMATCH,source=-2510.0,computed=50.12
+AXISBANK,2022-03,OPM_CROSSCHECK_MISMATCH,source=3170.0,computed=44.47
+AXISBANK,2023-03,OPM_CROSSCHECK_MISMATCH,source=13857.0,computed=34.16
+AXISBANK,2024-03,OPM_CROSSCHECK_MISMATCH,source=11952.0,computed=34.69
+BAJAJHLDNG,2013-03,ICR_DEBT_FREE,interest=0.0
+BAJAJHLDNG,2014-03,ICR_DEBT_FREE,interest=0.0
+BAJAJHLDNG,2015-03,ICR_DEBT_FREE,interest=0.0
+BAJAJHLDNG,2016-03,ICR_DEBT_FREE,interest=0.0
+BAJAJHLDNG,2017-03,ICR_DEBT_FREE,interest=0.0
+BAJAJHLDNG,2018-03,ICR_DEBT_FREE,interest=0.0
+BAJAJHLDNG,2019-03,ICR_DEBT_FREE,interest=0.0
+BAJFINANCE,2015-03,OPM_CROSSCHECK_MISMATCH,source=1367.0,computed=32.49
+BAJFINANCE,2016-03,OPM_CROSSCHECK_MISMATCH,source=1986.0,computed=32.25
+BAJFINANCE,2017-03,OPM_CROSSCHECK_MISMATCH,source=2867.0,computed=32.60
+BAJFINANCE,2018-03,OPM_CROSSCHECK_MISMATCH,source=3935.0,computed=32.28
+BAJFINANCE,2019-03,OPM_CROSSCHECK_MISMATCH,source=6310.0,computed=29.50
+BAJFINANCE,2020-03,OPM_CROSSCHECK_MISMATCH,source=7608.0,computed=34.73
+BAJFINANCE,2021-03,OPM_CROSSCHECK_MISMATCH,source=6314.0,computed=40.64
+BAJFINANCE,2022-03,OPM_CROSSCHECK_MISMATCH,source=9906.0,computed=37.55
+BAJFINANCE,2023-03,OPM_CROSSCHECK_MISMATCH,source=16018.0,computed=30.65
+BAJFINANCE,2024-03,OPM_CROSSCHECK_MISMATCH,source=19987.0,computed=29.29
+BANKBARODA,2013-03,OPM_CROSSCHECK_MISMATCH,source=1006.0,computed=30.05
+BANKBARODA,2014-03,OPM_CROSSCHECK_MISMATCH,source=809.0,computed=29.78
+BANKBARODA,2015-03,OPM_CROSSCHECK_MISMATCH,source=902.0,computed=29.98
+BANKBARODA,2016-03,OPM_CROSSCHECK_MISMATCH,source=-11700.0,computed=55.44
+BANKBARODA,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+BANKBARODA,2016-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+BANKBARODA,2017-03,OPM_CROSSCHECK_MISMATCH,source=-4372.0,computed=43.28
+BANKBARODA,2018-03,OPM_CROSSCHECK_MISMATCH,source=-9197.0,computed=56.65
+BANKBARODA,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+BANKBARODA,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+BANKBARODA,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+BANKBARODA,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+BANKBARODA,2019-03,OPM_CROSSCHECK_MISMATCH,source=-5414.0,computed=48.79
+BANKBARODA,2019-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+BANKBARODA,2019-03,CAGR_TURNAROUND,field=eps,window=3yr
+BANKBARODA,2020-03,OPM_CROSSCHECK_MISMATCH,source=-11728.0,computed=51.44
+BANKBARODA,2021-03,OPM_CROSSCHECK_MISMATCH,source=-6957.0,computed=51.23
+BANKBARODA,2021-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+BANKBARODA,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+BANKBARODA,2021-03,CAGR_TURNAROUND,field=eps,window=3yr
+BANKBARODA,2021-03,CAGR_TURNAROUND,field=eps,window=5yr
+BANKBARODA,2022-03,OPM_CROSSCHECK_MISMATCH,source=-2948.0,computed=51.12
+BANKBARODA,2023-03,OPM_CROSSCHECK_MISMATCH,source=6329.0,computed=40.45
+BANKBARODA,2023-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+BANKBARODA,2023-03,CAGR_TURNAROUND,field=eps,window=5yr
+BANKBARODA,2024-03,OPM_CROSSCHECK_MISMATCH,source=4102.0,computed=37.49
+BHARTIARTL,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+BHARTIARTL,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+BHARTIARTL,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+BHARTIARTL,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+BHARTIARTL,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+BHARTIARTL,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+BHARTIARTL,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+BHARTIARTL,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+BHARTIARTL,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+BHARTIARTL,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+BHARTIARTL,2024-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+BHARTIARTL,2024-03,CAGR_TURNAROUND,field=eps,window=3yr
+BHEL,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+BHEL,2016-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+BHEL,2019-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+BHEL,2019-03,CAGR_TURNAROUND,field=eps,window=3yr
+BHEL,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+BHEL,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+BHEL,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+BHEL,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+BHEL,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+BHEL,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+BHEL,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+BHEL,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+BHEL,2024-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+BHEL,2024-03,CAGR_TURNAROUND,field=eps,window=3yr
+BOSCHLTD,2013-12,ICR_DEBT_FREE,interest=0.0
+CANBK,2013-03,OPM_CROSSCHECK_MISMATCH,source=655.0,computed=21.18
+CANBK,2014-03,OPM_CROSSCHECK_MISMATCH,source=-672.0,computed=24.35
+CANBK,2015-03,OPM_CROSSCHECK_MISMATCH,source=-621.0,computed=23.51
+CANBK,2016-03,OPM_CROSSCHECK_MISMATCH,source=-8008.0,computed=40.38
+CANBK,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+CANBK,2016-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+CANBK,2017-03,OPM_CROSSCHECK_MISMATCH,source=-5775.0,computed=37.85
+CANBK,2018-03,OPM_CROSSCHECK_MISMATCH,source=-13350.0,computed=61.87
+CANBK,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+CANBK,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+CANBK,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+CANBK,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+CANBK,2019-03,OPM_CROSSCHECK_MISMATCH,source=-11590.0,computed=56.73
+CANBK,2019-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+CANBK,2019-03,CAGR_TURNAROUND,field=eps,window=3yr
+CANBK,2020-03,OPM_CROSSCHECK_MISMATCH,source=-12867.0,computed=53.88
+CANBK,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+CANBK,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+CANBK,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+CANBK,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+CANBK,2021-03,OPM_CROSSCHECK_MISMATCH,source=-18367.0,computed=61.83
+CANBK,2021-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+CANBK,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+CANBK,2021-03,CAGR_TURNAROUND,field=eps,window=3yr
+CANBK,2021-03,CAGR_TURNAROUND,field=eps,window=5yr
+CANBK,2022-03,OPM_CROSSCHECK_MISMATCH,source=-13657.0,computed=58.39
+CANBK,2023-03,OPM_CROSSCHECK_MISMATCH,source=-9877.0,computed=49.80
+CANBK,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+CANBK,2023-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+CANBK,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+CANBK,2023-03,CAGR_TURNAROUND,field=eps,window=5yr
+CANBK,2024-03,OPM_CROSSCHECK_MISMATCH,source=-7745.0,computed=41.75
+CHOLAFIN,2013-03,OPM_CROSSCHECK_MISMATCH,source=472.0,computed=26.77
+CHOLAFIN,2014-03,OPM_CROSSCHECK_MISMATCH,source=578.0,computed=28.42
+CHOLAFIN,2015-03,OPM_CROSSCHECK_MISMATCH,source=696.0,computed=28.56
+CHOLAFIN,2015-03,ICR_DEBT_FREE,interest=0.0
+CHOLAFIN,2016-03,OPM_CROSSCHECK_MISMATCH,source=899.0,computed=30.04
+CHOLAFIN,2017-03,OPM_CROSSCHECK_MISMATCH,source=1143.0,computed=28.16
+CHOLAFIN,2018-03,OPM_CROSSCHECK_MISMATCH,source=1451.0,computed=26.10
+CHOLAFIN,2018-03,ICR_DEBT_FREE,interest=0.0
+CHOLAFIN,2019-03,OPM_CROSSCHECK_MISMATCH,source=1888.0,computed=22.96
+CHOLAFIN,2020-03,OPM_CROSSCHECK_MISMATCH,source=1699.0,computed=27.79
+CHOLAFIN,2020-03,ICR_DEBT_FREE,interest=0.0
+CHOLAFIN,2021-03,OPM_CROSSCHECK_MISMATCH,source=2094.0,computed=30.40
+CHOLAFIN,2022-03,OPM_CROSSCHECK_MISMATCH,source=2924.0,computed=28.83
+CHOLAFIN,2023-03,OPM_CROSSCHECK_MISMATCH,source=3515.0,computed=28.10
+CHOLAFIN,2024-03,OPM_CROSSCHECK_MISMATCH,source=4548.0,computed=28.10
+CIPLA,2013-03,OPM_CROSSCHECK_MISMATCH,source=2214.0,computed=73.26
+CIPLA,2014-03,OPM_CROSSCHECK_MISMATCH,source=2147.0,computed=78.90
+CIPLA,2015-03,OPM_CROSSCHECK_MISMATCH,source=2163.0,computed=80.94
+CIPLA,2016-03,OPM_CROSSCHECK_MISMATCH,source=2480.0,computed=82.02
+CIPLA,2017-03,OPM_CROSSCHECK_MISMATCH,source=2496.0,computed=82.66
+CIPLA,2018-03,OPM_CROSSCHECK_MISMATCH,source=2826.0,computed=81.35
+CIPLA,2019-03,OPM_CROSSCHECK_MISMATCH,source=3097.0,computed=81.07
+CIPLA,2020-03,OPM_CROSSCHECK_MISMATCH,source=3206.0,computed=81.29
+CIPLA,2021-03,OPM_CROSSCHECK_MISMATCH,source=4252.0,computed=77.80
+CIPLA,2022-03,OPM_CROSSCHECK_MISMATCH,source=4553.0,computed=79.08
+CIPLA,2023-03,OPM_CROSSCHECK_MISMATCH,source=5027.0,computed=77.91
+CIPLA,2024-03,OPM_CROSSCHECK_MISMATCH,source=6291.0,computed=75.59
+COALINDIA,2013-03,OPM_CROSSCHECK_MISMATCH,source=18087.0,computed=73.52
+COALINDIA,2014-03,OPM_CROSSCHECK_MISMATCH,source=17766.0,computed=74.84
+COALINDIA,2015-03,OPM_CROSSCHECK_MISMATCH,source=17343.0,computed=76.60
+COALINDIA,2016-03,OPM_CROSSCHECK_MISMATCH,source=18714.0,computed=75.96
+COALINDIA,2017-03,OPM_CROSSCHECK_MISMATCH,source=12448.0,computed=84.07
+COALINDIA,2018-03,OPM_CROSSCHECK_MISMATCH,source=9288.0,computed=89.10
+COALINDIA,2019-03,OPM_CROSSCHECK_MISMATCH,source=25007.0,computed=74.89
+COALINDIA,2020-03,OPM_CROSSCHECK_MISMATCH,source=21581.0,computed=77.54
+COALINDIA,2021-03,OPM_CROSSCHECK_MISMATCH,source=18628.0,computed=79.31
+COALINDIA,2022-03,OPM_CROSSCHECK_MISMATCH,source=24721.0,computed=77.47
+COALINDIA,2023-03,OPM_CROSSCHECK_MISMATCH,source=44232.0,computed=68.01
+COALINDIA,2024-03,OPM_CROSSCHECK_MISMATCH,source=47971.0,computed=66.29
+DLF,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+DLF,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+DLF,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+DLF,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+DLF,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+DLF,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+GODREJCP,2024-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+GODREJCP,2024-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+GODREJCP,2024-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=10yr
+GODREJCP,2024-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+GODREJCP,2024-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+GODREJCP,2024-03,CAGR_DECLINE_TO_LOSS,field=eps,window=10yr
+HDFCBANK,2013-03,OPM_CROSSCHECK_MISMATCH,source=3534.0,computed=35.22
+HDFCBANK,2014-03,OPM_CROSSCHECK_MISMATCH,source=5602.0,computed=31.74
+HDFCBANK,2015-03,OPM_CROSSCHECK_MISMATCH,source=7214.0,computed=31.90
+HDFCBANK,2016-03,OPM_CROSSCHECK_MISMATCH,source=9037.0,computed=31.75
+HDFCBANK,2017-03,OPM_CROSSCHECK_MISMATCH,source=11374.0,computed=32.56
+HDFCBANK,2018-03,OPM_CROSSCHECK_MISMATCH,source=13374.0,computed=34.63
+HDFCBANK,2019-03,OPM_CROSSCHECK_MISMATCH,source=16592.0,computed=33.15
+HDFCBANK,2020-03,OPM_CROSSCHECK_MISMATCH,source=14593.0,computed=37.20
+HDFCBANK,2021-03,OPM_CROSSCHECK_MISMATCH,source=16848.0,computed=40.81
+HDFCBANK,2022-03,OPM_CROSSCHECK_MISMATCH,source=20795.0,computed=41.61
+HDFCBANK,2023-03,OPM_CROSSCHECK_MISMATCH,source=29932.0,computed=36.92
+HDFCBANK,2024-03,OPM_CROSSCHECK_MISMATCH,source=-44685.0,computed=61.41
+HDFCLIFE,2013-03,OPM_CROSSCHECK_MISMATCH,source=525.0,computed=96.27
+HDFCLIFE,2014-03,OPM_CROSSCHECK_MISMATCH,source=605.0,computed=96.48
+HDFCLIFE,2015-03,OPM_CROSSCHECK_MISMATCH,source=874.0,computed=96.79
+HDFCLIFE,2016-03,OPM_CROSSCHECK_MISMATCH,source=953.0,computed=94.74
+HDFCLIFE,2017-03,OPM_CROSSCHECK_MISMATCH,source=972.0,computed=96.83
+HDFCLIFE,2018-03,OPM_CROSSCHECK_MISMATCH,source=1074.0,computed=96.67
+HDFCLIFE,2019-03,OPM_CROSSCHECK_MISMATCH,source=1215.0,computed=96.87
+HDFCLIFE,2020-03,OPM_CROSSCHECK_MISMATCH,source=1141.0,computed=96.12
+HDFCLIFE,2021-03,OPM_CROSSCHECK_MISMATCH,source=1235.0,computed=98.27
+HDFCLIFE,2022-03,OPM_CROSSCHECK_MISMATCH,source=778.0,computed=98.84
+HDFCLIFE,2023-03,OPM_CROSSCHECK_MISMATCH,source=80.0,computed=99.89
+HDFCLIFE,2024-03,OPM_CROSSCHECK_MISMATCH,source=531.0,computed=99.48
+HEROMOTOCO,2014-03,OPM_CROSSCHECK_MISMATCH,source=3553.0,computed=85.94
+HEROMOTOCO,2015-03,OPM_CROSSCHECK_MISMATCH,source=3520.0,computed=87.22
+HEROMOTOCO,2016-03,OPM_CROSSCHECK_MISMATCH,source=4424.0,computed=84.45
+HEROMOTOCO,2017-03,OPM_CROSSCHECK_MISMATCH,source=4585.0,computed=83.97
+HEROMOTOCO,2018-03,OPM_CROSSCHECK_MISMATCH,source=5334.0,computed=83.57
+HEROMOTOCO,2019-03,OPM_CROSSCHECK_MISMATCH,source=5025.0,computed=85.21
+HEROMOTOCO,2020-03,OPM_CROSSCHECK_MISMATCH,source=4070.0,computed=86.09
+HEROMOTOCO,2021-03,OPM_CROSSCHECK_MISMATCH,source=4058.0,computed=86.90
+HEROMOTOCO,2022-03,OPM_CROSSCHECK_MISMATCH,source=3256.0,computed=88.98
+HEROMOTOCO,2023-03,OPM_CROSSCHECK_MISMATCH,source=4099.0,computed=88.00
+HEROMOTOCO,2024-03,OPM_CROSSCHECK_MISMATCH,source=5235.0,computed=86.15
+HINDALCO,2013-03,OPM_CROSSCHECK_MISMATCH,source=7699.0,computed=90.40
+HINDALCO,2014-03,OPM_CROSSCHECK_MISMATCH,source=8024.0,computed=90.85
+HINDALCO,2015-03,OPM_CROSSCHECK_MISMATCH,source=8844.0,computed=91.52
+HINDALCO,2016-03,OPM_CROSSCHECK_MISMATCH,source=7778.0,computed=92.12
+HINDALCO,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+HINDALCO,2016-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+HINDALCO,2017-03,OPM_CROSSCHECK_MISMATCH,source=12317.0,computed=87.71
+HINDALCO,2018-03,OPM_CROSSCHECK_MISMATCH,source=13695.0,computed=88.11
+HINDALCO,2019-03,OPM_CROSSCHECK_MISMATCH,source=15511.0,computed=88.12
+HINDALCO,2019-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+HINDALCO,2019-03,CAGR_TURNAROUND,field=eps,window=3yr
+HINDALCO,2020-03,OPM_CROSSCHECK_MISMATCH,source=14306.0,computed=87.89
+HINDALCO,2021-03,OPM_CROSSCHECK_MISMATCH,source=17559.0,computed=86.70
+HINDALCO,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+HINDALCO,2021-03,CAGR_TURNAROUND,field=eps,window=5yr
+HINDALCO,2022-03,OPM_CROSSCHECK_MISMATCH,source=28347.0,computed=85.47
+HINDALCO,2023-03,OPM_CROSSCHECK_MISMATCH,source=22666.0,computed=89.85
+HINDALCO,2024-03,OPM_CROSSCHECK_MISMATCH,source=23872.0,computed=88.95
+HINDUNILVR,2013-03,OPM_CROSSCHECK_MISMATCH,source=4220.0,computed=84.37
+HINDUNILVR,2014-03,OPM_CROSSCHECK_MISMATCH,source=4759.0,computed=83.72
+HINDUNILVR,2015-03,OPM_CROSSCHECK_MISMATCH,source=5412.0,computed=83.07
+HINDUNILVR,2016-03,OPM_CROSSCHECK_MISMATCH,source=5910.0,computed=81.64
+HINDUNILVR,2017-03,OPM_CROSSCHECK_MISMATCH,source=6328.0,computed=80.92
+HINDUNILVR,2018-03,OPM_CROSSCHECK_MISMATCH,source=7499.0,computed=78.90
+HINDUNILVR,2019-03,OPM_CROSSCHECK_MISMATCH,source=8880.0,computed=77.41
+HINDUNILVR,2020-03,OPM_CROSSCHECK_MISMATCH,source=9861.0,computed=75.21
+HINDUNILVR,2021-03,OPM_CROSSCHECK_MISMATCH,source=11626.0,computed=75.28
+HINDUNILVR,2022-03,OPM_CROSSCHECK_MISMATCH,source=12857.0,computed=75.49
+HINDUNILVR,2023-03,OPM_CROSSCHECK_MISMATCH,source=14147.0,computed=76.65
+HINDUNILVR,2024-03,OPM_CROSSCHECK_MISMATCH,source=14659.0,computed=76.32
+ICICIBANK,2013-03,OPM_CROSSCHECK_MISMATCH,source=-15085.0,computed=70.59
+ICICIBANK,2014-03,OPM_CROSSCHECK_MISMATCH,source=-13084.0,computed=66.40
+ICICIBANK,2015-03,OPM_CROSSCHECK_MISMATCH,source=-16120.0,computed=70.53
+ICICIBANK,2016-03,OPM_CROSSCHECK_MISMATCH,source=-26955.0,computed=88.12
+ICICIBANK,2017-03,OPM_CROSSCHECK_MISMATCH,source=-37737.0,computed=104.76
+ICICIBANK,2018-03,OPM_CROSSCHECK_MISMATCH,source=-44906.0,computed=117.12
+ICICIBANK,2019-03,OPM_CROSSCHECK_MISMATCH,source=-50971.0,computed=116.38
+ICICIBANK,2020-03,OPM_CROSSCHECK_MISMATCH,source=-45190.0,computed=100.62
+ICICIBANK,2021-03,OPM_CROSSCHECK_MISMATCH,source=-44805.0,computed=102.41
+ICICIBANK,2022-03,OPM_CROSSCHECK_MISMATCH,source=-26558.0,computed=84.69
+ICICIBANK,2023-03,OPM_CROSSCHECK_MISMATCH,source=-17341.0,computed=72.57
+ICICIBANK,2024-03,OPM_CROSSCHECK_MISMATCH,source=-14152.0,computed=62.41
+ICICIGI,2013-03,OPM_CROSSCHECK_MISMATCH,source=-178.0,computed=104.46
+ICICIGI,2014-03,OPM_CROSSCHECK_MISMATCH,source=-225.0,computed=105.19
+ICICIGI,2015-03,OPM_CROSSCHECK_MISMATCH,source=-221.0,computed=105.24
+ICICIGI,2016-03,OPM_CROSSCHECK_MISMATCH,source=764.0,computed=87.34
+ICICIGI,2016-03,ICR_DEBT_FREE,interest=0.0
+ICICIGI,2017-03,OPM_CROSSCHECK_MISMATCH,source=919.0,computed=87.78
+ICICIGI,2018-03,OPM_CROSSCHECK_MISMATCH,source=-262.0,computed=103.79
+ICICIGI,2019-03,OPM_CROSSCHECK_MISMATCH,source=1669.0,computed=85.05
+ICICIGI,2020-03,OPM_CROSSCHECK_MISMATCH,source=1772.0,computed=84.61
+ICICIGI,2021-03,OPM_CROSSCHECK_MISMATCH,source=2072.0,computed=82.97
+ICICIGI,2022-03,OPM_CROSSCHECK_MISMATCH,source=1016.0,computed=93.66
+ICICIGI,2023-03,OPM_CROSSCHECK_MISMATCH,source=1264.0,computed=92.93
+ICICIGI,2024-03,OPM_CROSSCHECK_MISMATCH,source=2577.0,computed=87.42
+ICICIPRULI,2013-03,OPM_CROSSCHECK_MISMATCH,source=745.0,computed=96.28
+ICICIPRULI,2014-03,OPM_CROSSCHECK_MISMATCH,source=1504.0,computed=93.13
+ICICIPRULI,2015-03,OPM_CROSSCHECK_MISMATCH,source=1655.0,computed=95.20
+ICICIPRULI,2016-03,OPM_CROSSCHECK_MISMATCH,source=1842.0,computed=91.17
+ICICIPRULI,2016-03,ICR_DEBT_FREE,interest=0.0
+ICICIPRULI,2017-03,OPM_CROSSCHECK_MISMATCH,source=1806.0,computed=95.22
+ICICIPRULI,2018-03,OPM_CROSSCHECK_MISMATCH,source=1771.0,computed=95.44
+ICICIPRULI,2019-03,OPM_CROSSCHECK_MISMATCH,source=541.0,computed=98.70
+ICICIPRULI,2020-03,OPM_CROSSCHECK_MISMATCH,source=-319.0,computed=101.52
+ICICIPRULI,2021-03,OPM_CROSSCHECK_MISMATCH,source=-390.0,computed=100.47
+ICICIPRULI,2022-03,OPM_CROSSCHECK_MISMATCH,source=-2163.0,computed=103.40
+ICICIPRULI,2023-03,OPM_CROSSCHECK_MISMATCH,source=-1757.0,computed=103.48
+ICICIPRULI,2024-03,OPM_CROSSCHECK_MISMATCH,source=-1829.0,computed=102.03
+INDIGO,2013-03,OPM_CROSSCHECK_MISMATCH,source=855.0,computed=90.71
+INDIGO,2014-03,OPM_CROSSCHECK_MISMATCH,source=433.0,computed=96.11
+INDIGO,2015-03,OPM_CROSSCHECK_MISMATCH,source=1904.0,computed=86.33
+INDIGO,2016-03,OPM_CROSSCHECK_MISMATCH,source=3164.0,computed=80.40
+INDIGO,2017-03,OPM_CROSSCHECK_MISMATCH,source=2219.0,computed=88.06
+INDIGO,2018-03,OPM_CROSSCHECK_MISMATCH,source=3030.0,computed=86.84
+INDIGO,2019-03,OPM_CROSSCHECK_MISMATCH,source=-151.0,computed=100.53
+INDIGO,2020-03,OPM_CROSSCHECK_MISMATCH,source=4069.0,computed=88.62
+INDIGO,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+INDIGO,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+INDIGO,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+INDIGO,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+INDIGO,2021-03,OPM_CROSSCHECK_MISMATCH,source=2.0,computed=99.98
+INDIGO,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+INDIGO,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+INDIGO,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+INDIGO,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+INDIGO,2022-03,OPM_CROSSCHECK_MISMATCH,source=558.0,computed=97.85
+INDIGO,2022-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+INDIGO,2022-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+INDIGO,2022-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+INDIGO,2022-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+INDIGO,2023-03,OPM_CROSSCHECK_MISMATCH,source=6521.0,computed=88.02
+INDIGO,2023-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+INDIGO,2023-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=10yr
+INDIGO,2023-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+INDIGO,2023-03,CAGR_DECLINE_TO_LOSS,field=eps,window=10yr
+INDIGO,2024-03,OPM_CROSSCHECK_MISMATCH,source=16331.0,computed=76.30
+INDIGO,2024-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+INDIGO,2024-03,CAGR_TURNAROUND,field=eps,window=3yr
+INDUSINDBK,2013-03,OPM_CROSSCHECK_MISMATCH,source=286.0,computed=27.88
+INDUSINDBK,2014-03,OPM_CROSSCHECK_MISMATCH,source=335.0,computed=30.95
+INDUSINDBK,2015-03,OPM_CROSSCHECK_MISMATCH,source=288.0,computed=32.33
+INDUSINDBK,2016-03,OPM_CROSSCHECK_MISMATCH,source=329.0,computed=35.28
+INDUSINDBK,2017-03,OPM_CROSSCHECK_MISMATCH,source=379.0,computed=39.46
+INDUSINDBK,2018-03,OPM_CROSSCHECK_MISMATCH,source=942.0,computed=37.93
+INDUSINDBK,2019-03,OPM_CROSSCHECK_MISMATCH,source=-437.0,computed=41.70
+INDUSINDBK,2020-03,OPM_CROSSCHECK_MISMATCH,source=-553.0,computed=43.81
+INDUSINDBK,2021-03,OPM_CROSSCHECK_MISMATCH,source=-2469.0,computed=55.16
+INDUSINDBK,2022-03,OPM_CROSSCHECK_MISMATCH,source=-839.0,computed=51.39
+INDUSINDBK,2023-03,OPM_CROSSCHECK_MISMATCH,source=2067.0,computed=42.69
+INDUSINDBK,2024-03,OPM_CROSSCHECK_MISMATCH,source=2978.0,computed=38.55
+INFY,2016-03,ICR_DEBT_FREE,interest=0.0
+INFY,2017-03,ICR_DEBT_FREE,interest=0.0
+INFY,2018-03,ICR_DEBT_FREE,interest=0.0
+INFY,2019-03,ICR_DEBT_FREE,interest=0.0
+IOC,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+IOC,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+IOC,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+IOC,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+IOC,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+IOC,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+IRCTC,2015-03,ICR_DEBT_FREE,interest=0.0
+IRCTC,2016-03,ICR_DEBT_FREE,interest=0.0
+JINDALSTEL,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+JINDALSTEL,2016-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+JINDALSTEL,2017-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+JINDALSTEL,2017-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+JINDALSTEL,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+JINDALSTEL,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+JINDALSTEL,2019-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+JINDALSTEL,2019-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+JINDALSTEL,2021-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+JINDALSTEL,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+JINDALSTEL,2021-03,CAGR_TURNAROUND,field=eps,window=3yr
+JINDALSTEL,2021-03,CAGR_TURNAROUND,field=eps,window=5yr
+JINDALSTEL,2022-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+JINDALSTEL,2022-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+JINDALSTEL,2022-03,CAGR_TURNAROUND,field=eps,window=3yr
+JINDALSTEL,2022-03,CAGR_TURNAROUND,field=eps,window=5yr
+JINDALSTEL,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+JINDALSTEL,2023-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+JINDALSTEL,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+JINDALSTEL,2023-03,CAGR_TURNAROUND,field=eps,window=5yr
+JINDALSTEL,2024-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+JINDALSTEL,2024-03,CAGR_TURNAROUND,field=eps,window=5yr
+JIOFIN,2023-03,OPM_CROSSCHECK_MISMATCH,source=88.0,computed=86.67
+JIOFIN,2023-03,ICR_DEBT_FREE,interest=0.0
+JSWSTEEL,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+JSWSTEEL,2016-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+JSWSTEEL,2019-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+JSWSTEEL,2019-03,CAGR_TURNAROUND,field=eps,window=3yr
+JSWSTEEL,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+JSWSTEEL,2021-03,CAGR_TURNAROUND,field=eps,window=5yr
+KOTAKBANK,2013-03,OPM_CROSSCHECK_MISMATCH,source=-1789.0,computed=60.92
+KOTAKBANK,2014-03,OPM_CROSSCHECK_MISMATCH,source=-1379.0,computed=58.84
+KOTAKBANK,2015-03,OPM_CROSSCHECK_MISMATCH,source=-3366.0,computed=72.96
+KOTAKBANK,2016-03,OPM_CROSSCHECK_MISMATCH,source=-2263.0,computed=56.57
+KOTAKBANK,2017-03,OPM_CROSSCHECK_MISMATCH,source=-3965.0,computed=66.44
+KOTAKBANK,2018-03,OPM_CROSSCHECK_MISMATCH,source=-4141.0,computed=66.87
+KOTAKBANK,2019-03,OPM_CROSSCHECK_MISMATCH,source=-5114.0,computed=66.23
+KOTAKBANK,2020-03,OPM_CROSSCHECK_MISMATCH,source=-5005.0,computed=67.45
+KOTAKBANK,2021-03,OPM_CROSSCHECK_MISMATCH,source=-9958.0,computed=90.83
+KOTAKBANK,2022-03,OPM_CROSSCHECK_MISMATCH,source=-8512.0,computed=90.98
+KOTAKBANK,2023-03,OPM_CROSSCHECK_MISMATCH,source=-5746.0,computed=79.44
+KOTAKBANK,2024-03,OPM_CROSSCHECK_MISMATCH,source=-13382.0,computed=83.67
+LICI,2019-03,ICR_DEBT_FREE,interest=0.0
+LICI,2020-03,ICR_DEBT_FREE,interest=0.0
+LICI,2021-03,ICR_DEBT_FREE,interest=0.0
+LICI,2022-03,ICR_DEBT_FREE,interest=0.0
+M&M,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+M&M,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+M&M,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+NAUKRI,2017-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+NAUKRI,2017-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+NAUKRI,2018-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+NAUKRI,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+NAUKRI,2022-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+NAUKRI,2022-03,CAGR_TURNAROUND,field=eps,window=5yr
+NAUKRI,2023-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+NAUKRI,2023-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=10yr
+NAUKRI,2023-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+NAUKRI,2023-03,CAGR_DECLINE_TO_LOSS,field=eps,window=10yr
+PNB,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+PNB,2016-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+PNB,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+PNB,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+PNB,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+PNB,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+PNB,2019-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+PNB,2019-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+PNB,2021-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+PNB,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+PNB,2021-03,CAGR_TURNAROUND,field=eps,window=3yr
+PNB,2021-03,CAGR_TURNAROUND,field=eps,window=5yr
+PNB,2022-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+PNB,2022-03,CAGR_TURNAROUND,field=eps,window=3yr
+PNB,2023-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+PNB,2023-03,CAGR_TURNAROUND,field=eps,window=5yr
+PNB,2024-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+PNB,2024-03,CAGR_TURNAROUND,field=eps,window=5yr
+SBILIFE,2020-03,ICR_DEBT_FREE,interest=0.0
+SBILIFE,2021-03,ICR_DEBT_FREE,interest=0.0
+SBILIFE,2022-03,ICR_DEBT_FREE,interest=0.0
+SBIN,2017-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+SBIN,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+SBIN,2018-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+SBIN,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+SBIN,2018-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+SBIN,2020-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+SBIN,2021-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+SBIN,2021-03,CAGR_TURNAROUND,field=eps,window=3yr
+SBIN,2022-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+SBIN,2023-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+SBIN,2023-03,CAGR_TURNAROUND,field=eps,window=5yr
+SUNPHARMA,2024-03,OPM_CROSSCHECK_MISMATCH,source=28.0,computed=26.84
+TATACONSUM,2016-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+TATACONSUM,2019-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TATACONSUM,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TATAMOTORS,2019-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+TATAMOTORS,2019-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+TATAMOTORS,2019-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+TATAMOTORS,2019-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+TATAMOTORS,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+TATAMOTORS,2020-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+TATAMOTORS,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+TATAMOTORS,2020-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+TATAMOTORS,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+TATAMOTORS,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+TATAMOTORS,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+TATAMOTORS,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+TATAMOTORS,2022-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+TATAMOTORS,2022-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+TATAMOTORS,2023-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TATAMOTORS,2023-03,CAGR_TURNAROUND,field=eps,window=3yr
+TATAMOTORS,2024-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TATAMOTORS,2024-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TATAMOTORS,2024-03,CAGR_TURNAROUND,field=eps,window=3yr
+TATAMOTORS,2024-03,CAGR_TURNAROUND,field=eps,window=5yr
+TATAPOWER,2017-03,CAGR_TURNAROUND,field=eps,window=3yr
+TATAPOWER,2019-03,CAGR_TURNAROUND,field=eps,window=5yr
+TATAPOWER,2024-03,CAGR_TURNAROUND,field=eps,window=10yr
+TATASTEEL,2017-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+TATASTEEL,2017-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+TATASTEEL,2018-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TATASTEEL,2018-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TATASTEEL,2018-03,CAGR_TURNAROUND,field=eps,window=3yr
+TATASTEEL,2018-03,CAGR_TURNAROUND,field=eps,window=5yr
+TATASTEEL,2019-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TATASTEEL,2020-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TATASTEEL,2020-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TATASTEEL,2020-03,CAGR_TURNAROUND,field=eps,window=3yr
+TATASTEEL,2020-03,CAGR_TURNAROUND,field=eps,window=5yr
+TATASTEEL,2021-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TATASTEEL,2022-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TATASTEEL,2022-03,CAGR_TURNAROUND,field=eps,window=5yr
+TATASTEEL,2023-03,CAGR_TURNAROUND,field=net_profit,window=10yr
+TATASTEEL,2023-03,CAGR_TURNAROUND,field=eps,window=10yr
+TATASTEEL,2024-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+TATASTEEL,2024-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+TATASTEEL,2024-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=10yr
+TATASTEEL,2024-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+TATASTEEL,2024-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+TATASTEEL,2024-03,CAGR_DECLINE_TO_LOSS,field=eps,window=10yr
+TRENT,2016-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TRENT,2016-03,CAGR_TURNAROUND,field=eps,window=3yr
+TRENT,2017-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TRENT,2017-03,CAGR_TURNAROUND,field=eps,window=3yr
+TRENT,2018-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TRENT,2018-03,CAGR_TURNAROUND,field=eps,window=5yr
+TRENT,2019-03,CAGR_TURNAROUND,field=net_profit,window=5yr
+TRENT,2019-03,CAGR_TURNAROUND,field=eps,window=5yr
+TRENT,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=3yr
+TRENT,2021-03,CAGR_DECLINE_TO_LOSS,field=net_profit,window=5yr
+TRENT,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=3yr
+TRENT,2021-03,CAGR_DECLINE_TO_LOSS,field=eps,window=5yr
+TRENT,2023-03,CAGR_TURNAROUND,field=net_profit,window=10yr
+TRENT,2023-03,CAGR_TURNAROUND,field=eps,window=10yr
+TRENT,2024-03,CAGR_TURNAROUND,field=net_profit,window=3yr
+TRENT,2024-03,CAGR_TURNAROUND,field=net_profit,window=10yr
+TRENT,2024-03,CAGR_TURNAROUND,field=eps,window=3yr
+TRENT,2024-03,CAGR_TURNAROUND,field=eps,window=10yr

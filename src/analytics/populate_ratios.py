@@ -1,220 +1,184 @@
-"""
-populate_ratios.py — Sprint 2 / Day 12-13
-Runs the ratio engine for all 92 companies across all available years and
-writes financial_ratios (SQLite), output/capital_allocation.csv and
-output/ratio_edge_cases.log.
-"""
-import os
-import sys
+"""Sprint 2 — Day 12/13: run the full ratio engine for all 92 companies across
+all available years and populate the financial_ratios table in SQLite."""
 import sqlite3
-import logging
+import sys
+import pathlib
 import pandas as pd
 
-sys.path.insert(0, os.path.dirname(__file__))
-from ratios import (net_profit_margin, operating_profit_margin, opm_cross_check,
-                     return_on_equity, roe_reliable_flag, return_on_capital_employed, return_on_assets,
-                     debt_to_equity, high_leverage_flag, interest_coverage_ratio,
-                     icr_label, icr_warning_flag, net_debt, asset_turnover)
-from cagr import cagr_from_series
-from cashflow_kpis import (free_cash_flow, cfo_quality_score, capex_intensity,
-                            fcf_conversion_rate, capital_allocation_pattern)
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from analytics import ratios as R
+from analytics import cagr as C
+from analytics import cashflow_kpis as CF
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
-OUT_DIR = os.path.join(ROOT, "output")
+DB_PATH = "data/nifty100.db"
 
 
-def load_frames(conn):
-    companies = pd.read_sql("SELECT * FROM companies", conn)
-    sectors = pd.read_sql("SELECT * FROM sectors", conn)
+def load_tables(conn):
     pl = pd.read_sql("SELECT * FROM profitandloss", conn)
     bs = pd.read_sql("SELECT * FROM balancesheet", conn)
     cf = pd.read_sql("SELECT * FROM cashflow", conn)
-    return companies, sectors, pl, bs, cf
+    sectors = pd.read_sql("SELECT * FROM sectors", conn)
+    return pl, bs, cf, sectors
 
 
 def build_merged(pl, bs, cf, sectors):
-    df = pl.merge(bs, on=["company_id", "year"], how="outer", suffixes=("_pl", "_bs"))
-    df = df.merge(cf, on=["company_id", "year"], how="outer")
+    df = pl.merge(bs, on=["company_id", "year"], how="outer", suffixes=("", "_bs"))
+    df = df.merge(cf, on=["company_id", "year"], how="outer", suffixes=("", "_cf"))
     df = df.merge(sectors[["company_id", "broad_sector"]], on="company_id", how="left")
-    df["ebit"] = df["operating_profit"] + df["other_income"].fillna(0)
-    return df.sort_values(["company_id", "year"])
+    df = df.sort_values(["company_id", "year"]).reset_index(drop=True)
+    df["ebit"] = df["operating_profit"] - df["depreciation"].fillna(0)
+    return df
 
 
-def compute_row_ratios(row):
-    npm = net_profit_margin(row.net_profit, row.sales)
-    opm_computed = operating_profit_margin(row.operating_profit, row.sales)
-    roe = return_on_equity(row.net_profit, row.equity_capital, row.reserves)
-    roe_reliable = roe_reliable_flag(row.net_profit, row.equity_capital, row.reserves, row.total_assets)
-    roce = return_on_capital_employed(row.ebit, row.equity_capital, row.reserves, row.borrowings)
-    roa = return_on_assets(row.net_profit, row.total_assets)
-    de = debt_to_equity(row.borrowings, row.equity_capital, row.reserves)
-    hlf = high_leverage_flag(de, row.broad_sector)
-    icr = interest_coverage_ratio(row.operating_profit, row.other_income, row.interest)
-    icr_lbl = icr_label(icr)
-    icr_warn = icr_warning_flag(icr)
-    ndebt = net_debt(row.borrowings, row.investments)
-    at = asset_turnover(row.sales, row.total_assets)
-    fcf = free_cash_flow(row.operating_activity, row.investing_activity)
-    capex_pct, capex_lbl = capex_intensity(row.investing_activity, row.sales)
-    fcf_conv = fcf_conversion_rate(fcf, row.operating_profit)
-    eps = row.eps
-    bvps = None
-    if row.equity_capital is not None and row.reserves is not None and row.face_value not in (None, 0):
-        try:
-            shares_cr = row.equity_capital / row.face_value  # equity_capital / face_value = shares (in crore units, matches book_value scale)
-            bvps = (row.equity_capital + row.reserves) / shares_cr if shares_cr else None
-        except (TypeError, ZeroDivisionError):
-            bvps = None
-    return dict(
-        net_profit_margin_pct=npm, operating_profit_margin_pct=opm_computed,
-        return_on_equity_pct=roe, roe_reliable_flag=(int(roe_reliable) if roe_reliable is not None else None),
-        return_on_capital_employed_pct=roce, return_on_assets_pct=roa,
-        debt_to_equity=de, high_leverage_flag=int(bool(hlf)),
-        interest_coverage=icr, icr_label=icr_lbl, icr_warning_flag=int(bool(icr_warn)),
-        net_debt_cr=ndebt, asset_turnover=at,
-        free_cash_flow_cr=fcf, capex_cr=row.investing_activity,
-        earnings_per_share=eps, book_value_per_share=bvps,
-        dividend_payout_ratio_pct=row.dividend_payout, total_debt_cr=row.borrowings,
-        cash_from_operations_cr=row.operating_activity,
-        capex_intensity_pct=capex_pct, fcf_conversion_pct=fcf_conv,
-        opm_cross_check_mismatch=(opm_cross_check(opm_computed, row.opm_percentage) is False),
-    )
-
-
-def run():
-    os.makedirs(OUT_DIR, exist_ok=True)
+def run(log_edge_cases=True):
     conn = sqlite3.connect(DB_PATH)
-    companies, sectors, pl, bs, cf = load_frames(conn)
-    companies_fv = companies[["company_id", "face_value", "roce_percentage", "roe_percentage"]]
+    pl, bs, cf, sectors = load_tables(conn)
+    companies = pd.read_sql("SELECT id AS company_id, face_value FROM companies", conn)
+    df = build_merged(pl, bs, cf, sectors)
+    df = df.merge(companies, on="company_id", how="left")
 
-    merged = build_merged(pl, bs, cf, sectors)
-    merged = merged.merge(companies_fv, on="company_id", how="left")
-
-    logging.basicConfig(filename=os.path.join(OUT_DIR, "ratio_edge_cases.log"), level=logging.INFO,
-                         format="%(message)s", filemode="w")
-    log = logging.getLogger("ratio_edge_cases")
-
-    rows_out = []
+    edge_log_lines = []
+    out_rows = []
     capital_alloc_rows = []
 
-    for cid, g in merged.groupby("company_id"):
+    for cid, g in df.groupby("company_id"):
         g = g.sort_values("year").reset_index(drop=True)
-        years = g["year"].tolist()
-        pat_series = list(zip(years, g["net_profit"]))
-        rev_series = list(zip(years, g["sales"]))
-        eps_series = list(zip(years, g["eps"]))
-        cfo_pat_by_year = {}
+        is_financial = (g["broad_sector"].iloc[0] == "Financials") if pd.notna(g["broad_sector"].iloc[0]) else False
+        n = len(g)
 
-        for i, row in g.iterrows():
-            base = compute_row_ratios(row)
+        # pre-compute CFO/PAT ratio series for 5yr rolling quality score
+        g["cfo_pat"] = g.apply(lambda r: CF.cfo_pat_ratio(r.get("operating_activity"), r.get("net_profit")), axis=1)
+        has_cf_data = g["operating_activity"].notna() & g["investing_activity"].notna() & g["financing_activity"].notna()
 
-            for window in (3, 5, 10):
-                rv, rf = cagr_from_series(rev_series, window)
-                pv, pf = cagr_from_series(pat_series, window)
-                ev, ef = cagr_from_series(eps_series, window)
-                base[f"revenue_cagr_{window}yr"], base[f"revenue_cagr_{window}yr_flag"] = rv, rf
-                base[f"pat_cagr_{window}yr"], base[f"pat_cagr_{window}yr_flag"] = pv, pf
-                base[f"eps_cagr_{window}yr"], base[f"eps_cagr_{window}yr_flag"] = ev, ef
+        for i in range(n):
+            row = g.iloc[i]
+            year = row["year"]
+            sales, net_profit = row.get("sales"), row.get("net_profit")
+            eq_cap, reserves, borrowings = row.get("equity_capital"), row.get("reserves"), row.get("borrowings")
+            total_assets = row.get("total_assets")
+            op_profit, other_income, interest = row.get("operating_profit"), row.get("other_income"), row.get("interest")
+            ebit = row.get("ebit")
+            cfo, cfi, cff = row.get("operating_activity"), row.get("investing_activity"), row.get("financing_activity")
+            investments = row.get("investments")
 
-            # CFO Quality Score — trailing up to 5 years CFO/PAT
-            cfo, pat = row.operating_activity, row.net_profit
-            cfo_pat_ratio = (cfo / pat) if (cfo is not None and pat) else None
-            cfo_pat_by_year[row.year] = cfo_pat_ratio
-            trailing = [cfo_pat_by_year.get(y) for y in range(row.year - 4, row.year + 1)]
-            cfo_q_score, cfo_q_label = cfo_quality_score(trailing)
-            base["cfo_quality_score"] = cfo_q_score
+            npm = R.net_profit_margin(net_profit, sales)
+            opm = R.operating_profit_margin(op_profit, sales)
+            if pd.notna(row.get("opm_percentage")) and opm is not None and abs(row["opm_percentage"] - opm) > 1:
+                edge_log_lines.append(f"{cid},{year},OPM_CROSSCHECK_MISMATCH,source={row['opm_percentage']},computed={opm:.2f}")
 
-            # Capital allocation pattern
-            label, s_cfo, s_cfi, s_cff = capital_allocation_pattern(
-                row.operating_activity, row.investing_activity, row.financing_activity, cfo_pat_ratio)
-            if label is not None:
-                capital_alloc_rows.append(dict(company_id=cid, year=row.year, cfo_sign=s_cfo,
-                                                cfi_sign=s_cfi, cff_sign=s_cff, pattern_label=label))
+            roe = R.return_on_equity(net_profit, eq_cap, reserves)
+            if roe is None and (eq_cap is not None or reserves is not None):
+                edge_log_lines.append(f"{cid},{year},ROE_NEGATIVE_EQUITY,equity_plus_reserves={(eq_cap or 0)+(reserves or 0):.1f}")
 
-            # Composite quality score placeholder (finalised with winsorisation in Sprint 3)
-            base["composite_quality_score"] = None
+            roce = R.return_on_capital_employed(ebit, eq_cap, reserves, borrowings)
+            roa = R.return_on_assets(net_profit, total_assets)
 
-            if base.pop("opm_cross_check_mismatch"):
-                log.info(f"[OPM] {cid} {row.year}: computed={base['operating_profit_margin_pct']} "
-                         f"stored={row.opm_percentage} diff>1pp")
+            de = R.debt_to_equity(borrowings, eq_cap, reserves)
+            hlf = R.high_leverage_flag(de, is_financial)
 
-            base["company_id"], base["year"] = cid, int(row.year)
-            rows_out.append(base)
+            icr = R.interest_coverage(op_profit, other_income, interest)
+            icr_lbl = R.icr_label(icr)
+            if icr is None:
+                edge_log_lines.append(f"{cid},{year},ICR_DEBT_FREE,interest={interest}")
+            icr_warn = R.icr_warning_flag(icr)
 
-        # Bank ROCE / ROE carve-out cross-check (Day 13) vs companies.xlsx pre-computed values
-        roce_src = g["roce_percentage"].iloc[-1] if len(g) else None
-        roe_src = g["roe_percentage"].iloc[-1] if len(g) else None
-        latest = [r for r in rows_out if r["company_id"] == cid][-1] if rows_out else None
-        if latest and roce_src is not None and latest.get("return_on_capital_employed_pct") is not None:
-            diff = abs(latest["return_on_capital_employed_pct"] - roce_src)
-            if diff > 5:
-                category = "version difference" if diff < 15 else "data source issue"
-                log.info(f"[ROCE] {cid}: engine={latest['return_on_capital_employed_pct']:.1f}% "
-                         f"source={roce_src:.1f}% diff={diff:.1f}pp category={category}")
-        if latest and roe_src is not None and latest.get("return_on_equity_pct") is not None:
-            diff = abs(latest["return_on_equity_pct"] - roe_src)
-            if diff > 5:
-                category = "formula discrepancy" if roe_src < 5 else "version difference"
-                log.info(f"[ROE] {cid}: engine={latest['return_on_equity_pct']:.2f}% "
-                         f"source={roe_src:.2f}% diff={diff:.1f}pp category={category} "
-                         f"(engine value used for analytics, source value for display only)")
+            ndebt = R.net_debt(borrowings, investments)
+            atr = R.asset_turnover(sales, total_assets)
 
-    ratios_df = pd.DataFrame(rows_out)
+            fcf = CF.free_cash_flow(cfo, cfi)
+            capex_pct, capex_lbl = CF.capex_intensity(cfi, sales)
+            fcf_conv = CF.fcf_conversion_rate(fcf, op_profit)
 
-    # ---- composite_quality_score (first pass, absolute scale; refined with
-    # winsorisation + sector-relative normalisation by screener/composite_score.py in Sprint 3) ----
-    def minmax(s):
-        s = s.astype(float)
-        lo, hi = s.quantile(0.10), s.quantile(0.90)
-        if hi == lo:
-            return s * 0 + 50
-        return ((s.clip(lo, hi) - lo) / (hi - lo) * 100)
+            # 5yr trailing CFO/PAT quality score
+            window = g["cfo_pat"].iloc[max(0, i - 4): i + 1].tolist()
+            cfo_pat_avg, cfo_quality_lbl = CF.cfo_quality_score(window)
 
-    latest_year = ratios_df["year"].max()
-    comp_cols = ["return_on_equity_pct", "return_on_capital_employed_pct", "net_profit_margin_pct",
-                 "free_cash_flow_cr", "revenue_cagr_5yr", "pat_cagr_5yr"]
-    scored = ratios_df.copy()
-    for c in comp_cols:
-        scored[c + "_n"] = minmax(scored[c].fillna(scored[c].median()))
-    scored["composite_quality_score"] = (
-        0.15 * scored["return_on_equity_pct_n"] + 0.10 * scored["return_on_capital_employed_pct_n"] +
-        0.10 * scored["net_profit_margin_pct_n"] + 0.20 * scored["free_cash_flow_cr_n"] +
-        0.10 * scored["revenue_cagr_5yr_n"] + 0.10 * scored["pat_cagr_5yr_n"] +
-        # leverage component: reward low D/E, high ICR
-        0.10 * (100 - minmax(scored["debt_to_equity"].fillna(scored["debt_to_equity"].median()))) +
-        0.15 * minmax(scored["interest_coverage"].fillna(scored["interest_coverage"].median()))
-    ).round(2)
-    ratios_df["composite_quality_score"] = scored["composite_quality_score"]
+            cfo_s, cfi_s, cff_s, pattern_label = CF.capital_allocation_pattern(cfo, cfi, cff, cfo_pat_avg)
+            if not has_cf_data.iloc[i]:
+                cfo_s = cfi_s = cff_s = pattern_label = None  # no CF statement for this snapshot - don't classify
+            capital_alloc_rows.append(dict(company_id=cid, year=year, cfo_sign=cfo_s, cfi_sign=cfi_s,
+                                            cff_sign=cff_s, pattern_label=pattern_label))
 
-    ratios_df = ratios_df[[
-        "company_id", "year", "net_profit_margin_pct", "operating_profit_margin_pct",
-        "return_on_equity_pct", "roe_reliable_flag", "return_on_capital_employed_pct", "return_on_assets_pct",
-        "debt_to_equity", "high_leverage_flag", "interest_coverage", "icr_label", "icr_warning_flag",
-        "net_debt_cr", "asset_turnover", "free_cash_flow_cr", "capex_cr", "earnings_per_share",
-        "book_value_per_share", "dividend_payout_ratio_pct", "total_debt_cr", "cash_from_operations_cr",
-        "revenue_cagr_3yr", "revenue_cagr_3yr_flag", "revenue_cagr_5yr", "revenue_cagr_5yr_flag",
-        "revenue_cagr_10yr", "revenue_cagr_10yr_flag", "pat_cagr_3yr", "pat_cagr_3yr_flag",
-        "pat_cagr_5yr", "pat_cagr_5yr_flag", "pat_cagr_10yr", "pat_cagr_10yr_flag",
-        "eps_cagr_3yr", "eps_cagr_3yr_flag", "eps_cagr_5yr", "eps_cagr_5yr_flag",
-        "eps_cagr_10yr", "eps_cagr_10yr_flag", "cfo_quality_score", "capex_intensity_pct",
-        "fcf_conversion_pct", "composite_quality_score",
-    ]]
+            def get_n_back(field, n_back):
+                j = i - n_back
+                return g[field].iloc[j] if j >= 0 else None
 
+            def cagr_for(field, n_years):
+                start = get_n_back(field, n_years)
+                end = row.get(field)
+                avail = i + 1
+                val, flag = C.cagr(start, end, n_years, n_available_years=avail if avail < n_years else None)
+                if flag == "TURNAROUND":
+                    edge_log_lines.append(f"{cid},{year},CAGR_TURNAROUND,field={field},window={n_years}yr")
+                elif flag == "DECLINE_TO_LOSS":
+                    edge_log_lines.append(f"{cid},{year},CAGR_DECLINE_TO_LOSS,field={field},window={n_years}yr")
+                return val, flag
+
+            rev3, rev3f = cagr_for("sales", 3)
+            rev5, rev5f = cagr_for("sales", 5)
+            rev10, rev10f = cagr_for("sales", 10)
+            pat3, pat3f = cagr_for("net_profit", 3)
+            pat5, pat5f = cagr_for("net_profit", 5)
+            pat10, pat10f = cagr_for("net_profit", 10)
+            eps3, eps3f = cagr_for("eps", 3)
+            eps5, eps5f = cagr_for("eps", 5)
+            eps10, eps10f = cagr_for("eps", 10)
+
+            eps = row.get("eps")
+            face_value = row.get("face_value")
+            bvps = None
+            if eq_cap and face_value:
+                num_shares = eq_cap / face_value  # equity_capital / face_value = shares outstanding (crore units cancel)
+                if num_shares:
+                    bvps = ((eq_cap or 0) + (reserves or 0)) / num_shares
+
+            out_rows.append(dict(
+                company_id=cid, year=year,
+                net_profit_margin_pct=npm, operating_profit_margin_pct=opm,
+                return_on_equity_pct=roe, return_on_capital_employed_pct=roce, return_on_assets_pct=roa,
+                debt_to_equity=de, high_leverage_flag=int(hlf),
+                interest_coverage=icr, icr_label=icr_lbl, icr_warning_flag=int(icr_warn),
+                net_debt_cr=ndebt, asset_turnover=atr,
+                revenue_cagr_3yr=rev3, revenue_cagr_3yr_flag=rev3f,
+                revenue_cagr_5yr=rev5, revenue_cagr_5yr_flag=rev5f,
+                revenue_cagr_10yr=rev10, revenue_cagr_10yr_flag=rev10f,
+                pat_cagr_3yr=pat3, pat_cagr_3yr_flag=pat3f,
+                pat_cagr_5yr=pat5, pat_cagr_5yr_flag=pat5f,
+                pat_cagr_10yr=pat10, pat_cagr_10yr_flag=pat10f,
+                eps_cagr_3yr=eps3, eps_cagr_3yr_flag=eps3f,
+                eps_cagr_5yr=eps5, eps_cagr_5yr_flag=eps5f,
+                eps_cagr_10yr=eps10, eps_cagr_10yr_flag=eps10f,
+                free_cash_flow_cr=fcf, capex_cr=abs(cfi) if cfi is not None else None,
+                capex_intensity_pct=capex_pct, capex_label=capex_lbl,
+                cfo_pat_ratio=cfo_pat_avg, cfo_quality_label=cfo_quality_lbl,
+                fcf_conversion_pct=fcf_conv,
+                earnings_per_share=eps, book_value_per_share=bvps,
+                dividend_payout_ratio_pct=row.get("dividend_payout"),
+                total_debt_cr=borrowings, cash_from_operations_cr=cfo,
+                composite_quality_score=None,  # computed in Sprint 3 (screener module)
+            ))
+
+    ratios_df = pd.DataFrame(out_rows)
+    capital_df = pd.DataFrame(capital_alloc_rows)
+
+    # write to SQLite
     conn.execute("DELETE FROM financial_ratios")
     ratios_df.to_sql("financial_ratios", conn, if_exists="append", index=False)
     conn.commit()
 
-    cap_df = pd.DataFrame(capital_alloc_rows)
-    cap_df.to_csv(os.path.join(OUT_DIR, "capital_allocation.csv"), index=False)
-
-    n_rows = conn.execute("SELECT COUNT(*) FROM financial_ratios").fetchone()[0]
-    print(f"financial_ratios populated: {n_rows} rows")
-    print(f"capital_allocation.csv: {len(cap_df)} rows")
-    non_null_cols = [c for c in ratios_df.columns if ratios_df[c].notna().any()]
-    print(f"Non-null KPI columns: {len(non_null_cols)}/{len(ratios_df.columns)}")
+    row_count = conn.execute("SELECT COUNT(*) FROM financial_ratios").fetchone()[0]
     conn.close()
-    return ratios_df
+
+    capital_df.to_csv("output/capital_allocation.csv", index=False)
+    with open("output/ratio_edge_cases.log", "w") as f:
+        f.write("company_id,year,category,detail\n")
+        for line in edge_log_lines:
+            f.write(line + "\n")
+
+    print(f"financial_ratios rows: {row_count}")
+    print(f"capital_allocation.csv rows: {len(capital_df)}")
+    print(f"edge cases logged: {len(edge_log_lines)}")
+    return row_count
 
 
 if __name__ == "__main__":

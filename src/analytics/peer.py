@@ -1,83 +1,67 @@
-"""
-peer.py — Sprint 3 / Day 18
-Computes PERCENT_RANK for 10 metrics within each of 11 peer groups and
-populates peer_percentiles. D/E is inverted so lower D/E -> higher percentile.
-"""
-import os
+"""Sprint 3 Day 18 — peer percentile computation: PERCENT_RANK for 10 metrics
+within each of the peer groups defined in peer_groups.xlsx."""
+import sys
+import pathlib
 import sqlite3
 import pandas as pd
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DB_PATH = os.path.join(ROOT, "db", "nifty100.db")
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from screener.engine import load_latest_universe
 
 METRICS = [
-    "return_on_equity_pct", "return_on_capital_employed_pct", "net_profit_margin_pct",
-    "debt_to_equity", "free_cash_flow_cr", "pat_cagr_5yr", "revenue_cagr_5yr",
-    "eps_cagr_5yr", "interest_coverage", "asset_turnover",
+    ("return_on_equity_pct", False),
+    ("return_on_capital_employed_pct", False),
+    ("net_profit_margin_pct", False),
+    ("debt_to_equity", True),           # inverse — lower D/E = higher percentile
+    ("free_cash_flow_cr", False),
+    ("pat_cagr_5yr", False),
+    ("revenue_cagr_5yr", False),
+    ("eps_cagr_5yr", False),
+    ("interest_coverage", False),
+    ("asset_turnover", False),
 ]
-INVERT = {"debt_to_equity"}  # lower is better -> invert percentile
 
 
-def latest_ratios(conn):
-    fr = pd.read_sql("SELECT * FROM financial_ratios", conn)
-    idx = fr.groupby("company_id")["year"].idxmax()
-    return fr.loc[idx].reset_index(drop=True)
+def run_peer_percentiles():
+    conn = sqlite3.connect("data/nifty100.db")
+    universe = load_latest_universe(conn)
+    peer_groups = pd.read_sql("SELECT * FROM peer_groups", conn)
+    conn.close()
 
-
-def compute_peer_percentiles(conn):
-    ratios = latest_ratios(conn)
-    peer_groups = pd.read_sql("SELECT peer_group_name, company_id FROM peer_groups", conn)
-    all_companies = pd.read_sql("SELECT company_id FROM companies", conn)["company_id"]
+    covered_ids = set(peer_groups["company_id"])
+    universe["has_peer_group"] = universe["company_id"].isin(covered_ids)
 
     rows = []
     for group_name, members in peer_groups.groupby("peer_group_name"):
-        member_ids = set(members["company_id"])
-        g = ratios[ratios["company_id"].isin(member_ids)]
-        for metric in METRICS:
-            vals = g[["company_id", "year", metric]].dropna(subset=[metric])
-            n = len(vals)
-            if n == 0:
+        member_ids = members["company_id"].tolist()
+        grp_df = universe[universe["company_id"].isin(member_ids)]
+        for metric, invert in METRICS:
+            valid = grp_df[["company_id", "year", metric]].dropna(subset=[metric])
+            if valid.empty:
                 continue
-            # PERCENT_RANK equivalent: rank / (n-1), or 1.0 if n==1
-            ranked = vals[metric].rank(method="average", pct=False)
-            pct_rank = (ranked - 1) / (n - 1) if n > 1 else pd.Series([1.0] * n, index=vals.index)
-            if metric in INVERT:
-                pct_rank = 1 - pct_rank
-            for (_, row), pr in zip(vals.iterrows(), pct_rank):
-                rows.append(dict(company_id=row.company_id, peer_group_name=group_name,
-                                  metric=metric, value=row[metric], percentile_rank=round(pr, 4),
-                                  year=int(row.year)))
+            pct = valid[metric].rank(pct=True, method="average")
+            if invert:
+                pct = 1 - pct
+            for (_, r), p in zip(valid.iterrows(), pct):
+                rows.append(dict(company_id=r["company_id"], peer_group_name=group_name,
+                                  metric=metric, value=r[metric], percentile_rank=round(float(p), 4),
+                                  year=r["year"]))
 
-    out = pd.DataFrame(rows)
+    percentiles_df = pd.DataFrame(rows)
 
-    # Companies not in any peer group
-    grouped_ids = set(peer_groups["company_id"])
-    unassigned = sorted(set(all_companies) - grouped_ids)
-
-    return out, unassigned
-
-
-def run():
-    conn = sqlite3.connect(DB_PATH)
-    out, unassigned = compute_peer_percentiles(conn)
+    conn = sqlite3.connect("data/nifty100.db")
     conn.execute("DELETE FROM peer_percentiles")
-    out.to_sql("peer_percentiles", conn, if_exists="append", index=False)
+    percentiles_df.to_sql("peer_percentiles", conn, if_exists="append", index=False)
     conn.commit()
-    print(f"peer_percentiles populated: {len(out)} rows across "
-          f"{out['peer_group_name'].nunique()} peer groups")
-    print(f"{len(unassigned)} companies have no peer group assigned "
-          f"(message: 'No peer group assigned', no error raised): {unassigned}")
-
-    # spot-check: within IT Services, highest ROE should have highest ROE percentile
-    it = out[(out.peer_group_name == "IT Services") & (out.metric == "return_on_equity_pct")]
-    if len(it):
-        top_roe = it.sort_values("value", ascending=False).iloc[0]
-        top_pct = it.sort_values("percentile_rank", ascending=False).iloc[0]
-        ok = top_roe["company_id"] == top_pct["company_id"]
-        print(f"IT Services spot-check (highest ROE == highest ROE percentile): {ok}")
     conn.close()
-    return out, unassigned
+
+    print(f"peer_percentiles rows: {len(percentiles_df)}")
+    print(f"peer groups covered: {percentiles_df['peer_group_name'].nunique()}")
+
+    no_group = universe[~universe["has_peer_group"]]["company_id"].tolist()
+    print(f"companies with 'No peer group assigned': {len(no_group)}")
+    return percentiles_df, no_group
 
 
 if __name__ == "__main__":
-    run()
+    run_peer_percentiles()

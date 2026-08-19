@@ -1,92 +1,101 @@
 # Nifty 100 Financial Intelligence Platform
 
-An end-to-end financial analytics platform covering 92 Nifty 100 companies:
-ETL + data-quality validation, a 40+ KPI ratio/CAGR/cash-flow engine, a
-screener + peer-percentile engine, a valuation module, an 8-screen Streamlit
-dashboard, an NLP pros/cons generator, and batch PDF report generation.
+A 12-module financial analytics platform built on 92 Nifty 100 companies: ETL →
+50+ KPI ratio engine → investment screener → peer comparison → valuation →
+cash-flow intelligence → NLP pros/cons → PDF reporting → KMeans clustering →
+Streamlit dashboard → FastAPI REST layer.
+
+Built against the actual uploaded datasets (`companies.xlsx`, `profitandloss.xlsx`,
+`balancesheet.xlsx`, `cashflow.xlsx`, `analysis.xlsx`, `documents.xlsx`,
+`prosandcons.xlsx`, plus the 5 supplementary files) — every number in `output/`
+and `reports/` was computed from that real data, not mocked.
+
+## Honest build notes
+
+This sandbox has **no network access**, so `fastapi`, `uvicorn`, `streamlit`,
+`plotly`, and `pytest` could not be `pip install`ed here:
+
+- The **Streamlit dashboard** (`src/dashboard/`) and **FastAPI server**
+  (`src/api/`) are delivered as complete, correct, ready-to-run source code,
+  written and reviewed against the spec — but were not executed live in this
+  environment. Everything they depend on (the screener engine, ratio engine,
+  peer engine) *was* executed and unit-tested directly.
+- Radar charts use **matplotlib** instead of Plotly (Plotly isn't installed
+  offline); the dashboard source itself uses Plotly per spec, since the
+  person running it will have a normal internet connection.
+- The 100 ETL/KPI/DQ unit tests were run with a small stdlib-only test
+  runner (`tests/run_tests.py`) standing in for `pytest`, since `pytest`
+  wasn't installable either. The 10 API tests are written in real pytest +
+  `TestClient` style (`tests/api/test_api.py`) and will run once you
+  `pip install fastapi uvicorn httpx pytest` in an environment with network
+  access.
+- Two real bugs were found and fixed during the build (both are visible in
+  the git history / prior commits if you're following along): a capital
+  allocation sign-classification bug where missing cash-flow snapshots
+  defaulted to "-" instead of being excluded, and a KMeans clustering
+  distortion caused by two companies (BEL, HAL) with near-zero equity
+  producing >4,000% ROE, fixed via P5/P95 winsorisation.
+- Several of the spec's illustrative "expected company count" ranges for
+  screener presets don't match this dataset's actual valuation multiples
+  (median P/E ≈46x here vs. the spec's assumption of ≈20x) — documented in
+  `docs/analyst_guide.pdf` section 2 rather than silently adjusted.
 
 ## Setup
 
 ```bash
-python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run order (Makefile targets)
+## Run order
 
 ```bash
-make load        # Sprint 1: build nifty100.db from data/raw + data/supplementary
-make validate     # Sprint 1: run 16 DQ rules -> output/validation_failures.csv
-make ratios       # Sprint 2: populate financial_ratios, capital_allocation.csv
-make screener     # Sprint 3: screener_output.xlsx, peer_comparison.xlsx, radar charts
-make valuation    # Sprint 4: valuation_summary.xlsx, valuation_flags.csv
-make nlp          # Sprint 5: pros_cons_generated.csv, analysis_parsed.csv
-make cashflow     # Sprint 5: cashflow_intelligence.xlsx, distress_alerts.csv
-make reports      # Sprint 5: 92 tearsheets + 11 sector PDFs + portfolio summary
-make test         # run all unit tests (tests/etl, tests/kpi)
-make dashboard    # streamlit run src/dashboard/app.py
-make clean        # remove generated db/output/reports artifacts
+python src/etl/loader.py                          # Sprint 1: build nifty100.db
+python src/analytics/populate_ratios.py            # Sprint 2: financial_ratios table
+python src/screener/export.py                      # Sprint 3: screener_output.xlsx
+python src/analytics/peer_reports.py                # Sprint 3: peer_comparison.xlsx + radar charts
+python src/analytics/valuation.py                   # Sprint 4: valuation_summary.xlsx
+python src/nlp/parser.py                            # Sprint 5: analysis_parsed.csv
+python src/nlp/pros_cons_generator.py                # Sprint 5: pros_cons_generated.csv
+python src/analytics/cashflow_intelligence.py        # Sprint 5: cashflow_intelligence.xlsx
+python src/reports/tearsheet.py                     # Sprint 5: 92 tearsheet PDFs
+python src/reports/sector_report.py                  # Sprint 5: sector + portfolio PDFs
+python src/analytics/clustering.py                   # Sprint 6: cluster_labels.csv + charts
+python src/reports/analyst_guide.py                  # Sprint 6: analyst_guide.pdf
+python src/reports/acceptance_checklist.py            # Sprint 6: acceptance_checklist.pdf
+python tests/run_tests.py tests/etl tests/kpi tests/dq # Sprint 6: pytest_report.html
+
+streamlit run src/dashboard/app.py    # dashboard: http://localhost:8501
+uvicorn src.api.main:app --port 8000  # API: http://localhost:8000/docs
 ```
 
-Or run the full pipeline end-to-end:
-
-```bash
-make all
-```
-
-## Dashboard
-
-```bash
-streamlit run src/dashboard/app.py
-```
-
-Opens on `http://localhost:8501` with 8 screens in the sidebar:
-
-1. **Home** — 6 summary KPI tiles, sector donut chart, top-5 by composite score, year selector.
-2. **Company Profile** — search/autocomplete, KPI tiles, 10yr Revenue/PAT bars, ROE/ROCE dual-axis line, pros/cons.
-3. **Screener** — 10 sliders + 6 preset buttons, live-updating results table, CSV download.
-4. **Peer Comparison** — peer-group dropdown, 8-axis radar vs peer average, side-by-side KPI table with benchmark highlight.
-5. **Trend Analysis** — multi-metric (up to 3) 10-year overlay with YoY % annotations.
-6. **Sector Analysis** — Revenue/ROE/Market-Cap bubble chart, sector median KPI bars.
-7. **Capital Allocation Map** — treemap of the 8 capital-allocation patterns, click-through company list.
-8. **Annual Reports** — per-company report archive with live link-health check.
-
-Every screen is defensive against missing/partial company history: metrics
-render `N/A` rather than crashing, and an unknown ticker shows
-"Ticker not found — please try another".
-
-## Repository layout
+## Project structure
 
 ```
-config/            screener_config.yaml (analyst-editable thresholds)
-data/raw/           7 core source workbooks
-data/supplementary/ 5 supplementary workbooks
-db/                 schema.sql, nifty100.db (generated)
-notebooks/          exploratory_queries.sql
-output/             all generated CSV/XLSX/log deliverables
-reports/            tearsheets/, sector/, portfolio/, radar_charts/
-src/etl/            normaliser.py, loader.py, validator.py
-src/analytics/      ratios.py, cagr.py, cashflow_kpis.py, populate_ratios.py,
-                     peer.py, valuation.py, radar.py, export_peer_comparison.py
-src/screener/       engine.py, composite_score.py, export_screener.py
-src/nlp/            parser.py, pros_cons_generator.py
-src/reports/        tearsheet.py, sector_report.py, portfolio_summary.py
-src/dashboard/       app.py, pages/01..08, utils/db.py
-tests/etl/, tests/kpi/  unit tests (run via tests/run_tests.py — see note below)
+data/nifty100.db          SQLite database (12 tables)
+data/raw/                  7 core Excel files (as uploaded)
+data/supporting/            5 supplementary Excel files
+db/schema.sql              10-table SQLite schema with FK constraints
+src/etl/                   loader.py, validator.py (16 DQ rules), normaliser.py
+src/analytics/             ratios.py, cagr.py, cashflow_kpis.py, scoring.py,
+                            populate_ratios.py, peer.py, peer_reports.py,
+                            valuation.py, cashflow_intelligence.py, clustering.py
+src/screener/               engine.py, export.py
+src/nlp/                    parser.py, pros_cons_generator.py
+src/reports/                 tearsheet.py, sector_report.py, analyst_guide.py,
+                            acceptance_checklist.py
+src/dashboard/               app.py, pages/01-08, utils/db.py
+src/api/                    main.py, deps.py, routers/ (8 files, 16 endpoints)
+src/qa/                     acceptance_gates.py
+config/screener_config.yaml All threshold definitions, analyst-editable
+tests/                      etl/, kpi/, dq/, api/ + run_tests.py
+notebooks/                  exploratory_queries.sql
+output/                     All CSV/XLSX deliverables
+reports/                    tearsheets/, sector/, portfolio/, radar_charts/,
+                            elbow_plot.png, correlation_heatmap.png, pytest_report.html
+docs/                       analyst_guide.pdf, acceptance_checklist.pdf
 ```
 
-## Test runner note
+## Test results
 
-The sandbox this project was originally built in has no outbound network
-access, so `pytest` could not be `pip install`-ed. `tests/run_tests.py` is a
-small dependency-free collector that runs every `test_*` function in
-`tests/etl/` and `tests/kpi/`, including simple generator-based fixtures
-(`def conn(): yield sqlite3.connect(...)`). If your environment has `pytest`
-available, the same test files run under it unmodified — just `pytest tests/`.
-
-## Known data caveats
-
-See `output/known_exceptions.md` and `output/sprint2_retrospective.md` for a
-full account of source-data anomalies encountered (e.g. bank OPM fields,
-TCS's implausible source ROE, ADANIENSOL's pre-listing shell row) and how
-each was resolved.
+100/100 ETL + KPI + DQ unit tests pass (`reports/pytest_report.html`).
+20/20 acceptance gates pass (`docs/acceptance_checklist.pdf`).
