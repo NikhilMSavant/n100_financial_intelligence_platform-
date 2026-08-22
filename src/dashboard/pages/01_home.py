@@ -13,7 +13,7 @@ universe = get_screener_universe()
 companies = get_companies()
 
 c1, c2, c3, c4, c5, c6 = st.columns(6)
-c1.metric("Average ROE", f"{universe['return_on_equity_pct'].mean():.1f}%")
+c1.metric("Median ROE", f"{universe['return_on_equity_pct'].median():.1f}%")
 c2.metric("Median P/E", f"{universe['pe_ratio'].median():.1f}x")
 c3.metric("Median D/E", f"{universe['debt_to_equity'].median():.2f}")
 c4.metric("Total Companies", f"{len(companies)}")

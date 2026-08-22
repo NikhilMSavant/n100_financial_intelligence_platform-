@@ -44,6 +44,10 @@ presets:
       return_on_equity_pct: {min: 12}
       sales: {min: 5000}
     rank_by: return_on_equity_pct
+    # expected_range below is the spec's original illustrative figure. This dataset has only
+    # 3 genuinely debt-free companies total (see Home screen "Debt-Free Companies" tile) —
+    # 2 of those also clear ROE>12% and Revenue>5,000cr. The [15,30] range assumed a larger
+    # debt-free population than this dataset actually has; a 2-company result is correct, not a bug.
     expected_range: [15, 30]
 
   turnaround_watch:

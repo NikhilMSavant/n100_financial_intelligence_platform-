@@ -45,8 +45,9 @@ def load_latest_universe(conn):
 
 def _passes(row, field, cond, config):
     val = row.get(field)
-    if field == "debt_to_equity" and config.get("de_filter_skip_sector") and row.get("broad_sector") == config["de_filter_skip_sector"]:
-        return True  # D/E filter automatically skipped for Financials sector
+    if (field == "debt_to_equity" and config.get("de_filter_skip_sector")
+            and row.get("broad_sector") == config["de_filter_skip_sector"] and "equals" not in cond):
+        return True  # D/E max-threshold filter skipped for Financials sector — NOT for an exact-equals condition
     if field == "interest_coverage" and row.get("icr_label") == "Debt Free":
         return True  # Debt Free treated as ICR = infinity -> passes any minimum
     if val is None or (isinstance(val, float) and np.isnan(val)):
